@@ -1,8 +1,8 @@
-<div align="center"><img src="https://github.com/IlanCosman/tide/blob/assets/images/logo.svg" width="480"/></div>
+<div align="center"><img src="https://github.com/plttn/tide/blob/assets/images/logo.svg" width="480"/></div>
 
 <h2></h2>
 
-<img src="https://github.com/IlanCosman/tide/blob/assets/images/header.png" width="50%" align="right"/>
+<img src="https://github.com/plttn/tide/blob/assets/images/header.png" width="50%" align="right"/>
 
 **The ultimate Fish prompt.**
 
@@ -47,7 +47,7 @@ Run `tide configure` to open the wizard in your terminal.
 
 ![configuration_wizard][]
 
-<img src="https://github.com/IlanCosman/tide/blob/assets/images/flexible.png" width="61.8%" align="right"/>
+<img src="https://github.com/plttn/tide/blob/assets/images/flexible.png" width="61.8%" align="right"/>
 
 ### Flexible
 
@@ -55,7 +55,7 @@ Using the [`items`][] list for each side of the prompt, you have full control of
 
 <br clear="right">
 
-<img src="https://github.com/IlanCosman/tide/blob/assets/images/extendable.png" width="61.8%" align="left"/>
+<img src="https://github.com/plttn/tide/blob/assets/images/extendable.png" width="61.8%" align="left"/>
 
 ### Extendable
 
@@ -75,7 +75,7 @@ Asynchronous rendering also lets Tide display more information than other prompt
 
 The current working directory is the most important part of any shell prompt. Tide highlights the critical parts and truncates with the least loss of information when horizontal space is scarce.
 
-<div align="center"><img src="https://github.com/IlanCosman/tide/blob/assets/images/pwd.png"/></div>
+<div align="center"><img src="https://github.com/plttn/tide/blob/assets/images/pwd.png"/></div>
 
 When the full directory doesn't fit, the leftmost segment is truncated to its shortest unique prefix. In the example above, `Documents` becomes `Doc` instead of `D` because that could be confused with `Downloads`. Important segments are bold and never truncated. These include the last segment, root of a Git repository etc.
 
@@ -128,5 +128,5 @@ Open each file and click "Install". This will make the `MesloLGS NF` font availa
 [powerlevel10k]: https://github.com/romkatv/powerlevel10k/
 [spacefish]: https://github.com/matchai/spacefish
 [starship]: https://github.com/starship/starship
-[using an older version of fish?]: https://github.com/IlanCosman/tide/wiki/Fish-version-compatibility
+[using an older version of fish?]:https://github.com/plttn/tide/wiki/Fish-version-compatibility
 [wiki]: https://github.com/IlanCosman/tide/wiki
