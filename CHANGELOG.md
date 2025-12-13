@@ -1,5 +1,13 @@
 # Changelog
 
+##
+
+## [v7.0.2][] (???)
+
+### Fast follow
+
+- rollback changes made inadvertently in 7.0.1 for newline handling
+
 ## [v7.0.1][] (???)
 
 ### Bug fixes

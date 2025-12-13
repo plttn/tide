@@ -7,7 +7,7 @@ _tide_cache_variables
 _tide_parent_dirs
 source (functions --details _tide_pwd)
 
-set -l prompt_var (string trim -r _tide_prompt_$fish_pid)
+set -l prompt_var _tide_prompt_$fish_pid
 set -U $prompt_var # Set var here so if we erase $prompt_var, bg job won't set a uvar
 
 set_color normal | read -l color_normal
@@ -67,7 +67,7 @@ function fish_right_prompt
 end"
 
 else # one line prompt initialization
-    # test "$tide_prompt_add_newline_before" = true && set -l add_newline '\0'
+    test "$tide_prompt_add_newline_before" = true && set -l add_newline '\0'
     math 5 -$tide_prompt_min_cols | read -l column_offset
     test $column_offset -ge 0 && set column_offset "+$column_offset"
 
