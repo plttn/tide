@@ -1,5 +1,12 @@
 # Changelog
 
+## [v7.0.1][] (???)
+
+### Bug fixes
+
+- Tide in one-line prompt mode no longer has an extra newline in VSCode embedded
+  terminal
+
 ## [v7.0.0][] (???)
 
 ### Breaking change
