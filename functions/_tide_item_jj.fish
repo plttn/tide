@@ -31,5 +31,5 @@ function _tide_item_jj
         if(divergent, "divergent"),
         if(hidden, "hidden"),
     )' | string trim)
-    _tide_print_item jj $tide_jj_icon' ' (set_color green; echo -ns "("; echo -ns "$jj_status"; set_color green; echo -ns ")")
+    _tide_print_item jj $tide_jj_icon' ' (set_color $tide_jj_color; echo -ns "("; echo -ns "$jj_status"; set_color $tide_jj_color; echo -ns ")")
 end
