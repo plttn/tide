@@ -30,6 +30,6 @@ function _tide_item_jj
         if(conflict, "conflict"),
         if(divergent, "divergent"),
         if(hidden, "hidden"),
-    )' | string trim)
+    )' 2> /dev/null | string trim) # send stderr to dev/null so that when prompt re-renders after `jj git init` we don't see an error message
     _tide_print_item jj $tide_jj_icon' ' (set_color $tide_jj_color; echo -ns "("; echo -ns "$jj_status"; set_color $tide_jj_color; echo -ns ")")
 end
