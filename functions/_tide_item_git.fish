@@ -1,7 +1,9 @@
 function _tide_item_git
 
-    if not command -sq jj; or jj root --quiet &>/dev/null
-        return 1
+    if command -sq jj
+        if jj root --quiet &>/dev/null
+            return 1
+        end
     end
 
     if git branch --show-current 2>/dev/null | string shorten -"$tide_git_truncation_strategy"m$tide_git_truncation_length | read -l location
