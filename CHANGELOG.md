@@ -1,6 +1,10 @@
 # Changelog
 
-##
+## [v7.0.3][] (Jan 27 2026)
+
+### New feature
+
+- `jj` is now a supported VCS. If in a jj repo, git status will be replaced by jj
 
 ## [v7.0.2][] (???)
 
