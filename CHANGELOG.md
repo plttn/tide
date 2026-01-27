@@ -1,5 +1,11 @@
 # Changelog
 
+## [v7.0.4][] (???)
+
+### Fast follow
+
+- ensure jj init errors aren't logged when creating a jj repo due to a race condition
+
 ## [v7.0.3][] (Jan 27 2026)
 
 ### New feature
