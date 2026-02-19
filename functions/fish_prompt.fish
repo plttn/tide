@@ -13,6 +13,10 @@ set -U $prompt_var # Set var here so if we erase $prompt_var, bg job won't set a
 set_color normal | read -l color_normal
 status fish-path | read -l fish_path
 
+if string match -i homebrew/Cellar $fish_path
+    set fish_path (string replace -r '/Cellar/[^/]+/[^/]+/bin/' '/bin/' $fish_path)
+end
+
 # _tide_repaint prevents us from creating a second background job
 function _tide_refresh_prompt --on-variable $prompt_var --on-variable COLUMNS
     set -g _tide_repaint
