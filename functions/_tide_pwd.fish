@@ -12,7 +12,7 @@ eval "function _tide_pwd
             set -f split_output \"$unwritable_icon\$split_pwd[1]\" \$split_pwd[2..]
         set split_output[-1] \"$color_anchors\$split_output[-1]$reset_to_color_dirs\"
     else
-        set -f split_output \"$home_icon$color_anchors~\"
+        set -f split_output \"$home_icon$color_anchors~$reset_to_color_dirs\"
     end
 
     string join / -- \$split_output | string length -V | read -g _tide_pwd_len
