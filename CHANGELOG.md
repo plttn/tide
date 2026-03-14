@@ -1,5 +1,16 @@
 # Changelog
 
+## [v7.0.5][] (Mar 13 2026)
+
+### Bug fixes
+
+- Fix bold leaking from home directory pwd to right prompt
+- Forward `fish_key_bindings` for Fish 4.3 changes
+
+### Compatibility
+
+- Add Homebrew Cellar path normalization for Fish installed via Homebrew
+
 ## [v7.0.4][] (???)
 
 ### Fast follow
@@ -668,3 +679,4 @@ Tide now uses the [Fish transient prompt functionality](https://fishshell.com/do
 [v6.0.1]: https://github.com/IlanCosman/tide/tree/v6.0.1
 [v6.1.0]: https://github.com/IlanCosman/tide/tree/v6.1.0
 [v6.1.1]: https://github.com/IlanCosman/tide/tree/v6.1.1
+[v7.0.5]: https://github.com/plttn/tide/tree/v7.0.5
