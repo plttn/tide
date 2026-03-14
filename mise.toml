@@ -1,0 +1,7 @@
+[tasks.release]
+confirm = 'Are you sure you want to cut a new release?'
+description = 'Cut a new release'
+file = 'scripts/release.sh'
+usage = '''
+arg "<version>" help="Version to release (e.g. 7.1.0)"
+'''

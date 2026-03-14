@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 #MISE description="Cut a release: mise run release <version> (e.g. mise run release 7.1.0)"
+#MISE
 set -euo pipefail
 
 VERSION="${1:-}"
