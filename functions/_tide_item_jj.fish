@@ -3,33 +3,27 @@ function _tide_item_jj
         return 1
     end
 
-    set jj_status (jj log -r@ -n1 --no-graph --color always -T '
-    separate(" ",
-        bookmarks.map(|x| if(
-            x.name().substr(0, 10).starts_with(x.name()),
-            x.name().substr(0, 10),
-            x.name().substr(0, 9) ++ "…")
-        ).join(" "),
-        tags.map(|x| if(
-            x.name().substr(0, 10).starts_with(x.name()),
-            x.name().substr(0, 10),
-            x.name().substr(0, 9) ++ "…")
-        ).join(" "),
-        surround("\"","\"",
-            if(
-                description.first_line().substr(0, 24).starts_with(description.first_line()),
-                description.first_line().substr(0, 24),
-                description.first_line().substr(0, 23) ++ "…"
-            )
-        ),
-        change_id.shortest(),
-        commit_id.shortest(),
-        diff.files().len() ++ "m",
-        diff.stat().total_added() ++ "+",
-        diff.stat().total_removed() ++ "-",
-        if(conflict, "conflict"),
-        if(divergent, "divergent"),
-        if(hidden, "hidden"),
-    )' 2> /dev/null | string trim) # send stderr to dev/null so that when prompt re-renders after `jj git init` we don't see an error message
-    _tide_print_item jj $tide_jj_icon' ' (set_color $tide_jj_color; echo -ns "("; echo -ns "$jj_status"; set_color $tide_jj_color; echo -ns ")")
+    jj log -r@ -n1 --no-graph --color never -T '
+        separate("\n",
+            if(bookmarks, bookmarks.map(|x| x.name()).join(" "), change_id.shortest()),
+            if(conflict, "1", "0"),
+            diff.files().len(),
+        )
+    ' 2>/dev/null | read -fL location conflicted modified
+
+    if test "$conflicted" = "1"
+        set -g tide_jj_bg_color $tide_git_bg_color_urgent
+    else if test "$modified" != "0" -a "$modified" != ""
+        set -g tide_jj_bg_color $tide_git_bg_color_unstable
+    end
+
+    _tide_print_item jj $_tide_location_color$tide_jj_icon' ' (
+        echo -ns $location
+        if test "$conflicted" = "1"
+            set_color $tide_git_color_conflicted; echo -ns " ~"
+        end
+        if test "$modified" != "0" -a "$modified" != ""
+            set_color $tide_git_color_dirty; echo -ns " !"$modified
+        end
+    )
 end

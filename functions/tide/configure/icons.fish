@@ -14,6 +14,7 @@ tide_gcloud_icon 󰊭 # Actual google cloud glyph is harder to see
 tide_git_icon
 tide_go_icon 
 tide_java_icon 
+tide_jj_icon
 tide_jobs_icon 
 tide_kubectl_icon 󱃾
 tide_nix_shell_icon 

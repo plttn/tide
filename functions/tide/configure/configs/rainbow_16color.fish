@@ -39,6 +39,9 @@ tide_go_bg_color brcyan
 tide_go_color black
 tide_java_bg_color yellow
 tide_java_color black
+tide_jj_bg_color green
+tide_jj_color black
+tide_jj_icon ''
 tide_jobs_bg_color brblack
 tide_jobs_color green
 tide_kubectl_bg_color blue

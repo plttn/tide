@@ -2,8 +2,12 @@ function _tide_cache_variables
     # Same-color-separator color
     set_color $tide_prompt_color_separator_same_color | read -gx _tide_color_separator_same_color
 
-    # git
-    contains git $_tide_left_items $_tide_right_items && set_color $tide_git_color_branch | read -gx _tide_location_color
+    # git/jj
+    if contains git $_tide_left_items $_tide_right_items
+        set_color $tide_git_color_branch | read -gx _tide_location_color
+    else if contains jj $_tide_left_items $_tide_right_items
+        set_color $tide_jj_color_branch | read -gx _tide_location_color
+    end
 
     # private_mode
     if contains private_mode $_tide_left_items $_tide_right_items && test -n "$fish_private_mode"
