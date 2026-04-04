@@ -3,33 +3,196 @@ function _tide_item_jj
         return 1
     end
 
-    set jj_status (jj log -r@ -n1 --no-graph --color always -T '
-    separate(" ",
-        bookmarks.map(|x| if(
-            x.name().substr(0, 10).starts_with(x.name()),
-            x.name().substr(0, 10),
-            x.name().substr(0, 9) ++ "…")
-        ).join(" "),
-        tags.map(|x| if(
-            x.name().substr(0, 10).starts_with(x.name()),
-            x.name().substr(0, 10),
-            x.name().substr(0, 9) ++ "…")
-        ).join(" "),
-        surround("\"","\"",
-            if(
-                description.first_line().substr(0, 24).starts_with(description.first_line()),
-                description.first_line().substr(0, 24),
-                description.first_line().substr(0, 23) ++ "…"
+    set -l tmpl '
+if(self.contained_in("::trunk() & ~::@"),
+    "B\n",
+    if(self.contained_in("@"),
+        change_id.shortest() ++
+            if(divergent, "/" ++ change_offset) ++
+        "\t" ++
+        if(self.contained_in("mine()"), ".", coalesce(author.email().local(), author.name(), ".")) ++
+        "\t" ++
+        coalesce(
+            separate(",",
+                if(local_bookmarks, local_bookmarks.join(",")),
+            ),
+            ".",
+        ) ++ "\t" ++
+        working_copies ++ "\t" ++
+        commit_id.shortest() ++ "\t" ++
+        separate(" ",
+            if(conflict, "(conflict)"),
+            if(divergent, "(divergent)"),
+            if(hidden, "(hidden)"),
+            coalesce(
+                if(empty, "(empty)"),
+                "*",
+            ),
+        ) ++ "\t" ++
+        immutable ++ "\t" ++
+        if(description, description.first_line(), "(no desc)") ++ "\n"
+    ,
+        if(self.contained_in("trunk()"),
+            ".\n",
+            if(local_bookmarks,
+                change_id.shortest() ++ "\t" ++ separate(",",
+                    local_bookmarks.join(","),
+                    if(tags, tags.join(",")),
+                ) ++ "\n",
             )
-        ),
-        change_id.shortest(),
-        commit_id.shortest(),
-        diff.files().len() ++ "m",
-        diff.stat().total_added() ++ "+",
-        diff.stat().total_removed() ++ "-",
-        if(conflict, "conflict"),
-        if(divergent, "divergent"),
-        if(hidden, "hidden"),
-    )' 2> /dev/null | string trim) # send stderr to dev/null so that when prompt re-renders after `jj git init` we don't see an error message
-    _tide_print_item jj $tide_jj_icon' ' (set_color $tide_jj_color; echo -ns "("; echo -ns "$jj_status"; set_color $tide_jj_color; echo -ns ")")
+        )
+    )
+)
+'
+
+    set -l raw_lines (jj log --no-pager --no-graph --ignore-working-copy --color=never \
+        -r '@ | trunk()..@ | (::trunk() & ~::@)' \
+        -T $tmpl 2>/dev/null)
+    or return 1
+
+    # Colors
+    set -l bold_brmagenta (set_color brmagenta)
+    set -l magenta (set_color magenta)
+    set -l bold_brblue (set_color brblue)
+    set -l bold_brgreen (set_color brgreen)
+    set -l bold_brred (set_color brred)
+    set -l bold_yellow (set_color yellow)
+    set -l gray (set_color brblack)
+    set -l reset (printf '\e[39m')
+
+    set -l use_bold true
+    set -q fish_jj_prompt_bold; and set use_bold $fish_jj_prompt_bold
+    set -l bold ""
+    test "$use_bold" = true; and set bold (printf '\e[1m')
+
+    set -l info ""
+    set -l has_conflict 0
+    set -l has_immutable 0
+    set -l behind 0
+    set -l ahead 0
+    set -l display_bookmarks
+
+    for line in $raw_lines
+        if test "$line" = B
+            set behind (math $behind + 1)
+            continue
+        end
+
+        set ahead (math $ahead + 1)
+        set -l parts (string split \t -- $line)
+        set -l nparts (count $parts)
+
+        if test $nparts -ge 8
+            # @ line fields: change_id[1] author[2] bookmarks[3] working_copies[4] commit_id[5] status[6] immutable[7] description[8]
+            # Separate (divergent) from other status flags for distinct coloring
+            set -l st $parts[6]
+            set -l divergent_label ""
+            set -l cid_color $bold_brmagenta
+            if string match -q '*(divergent)*' -- "$st"
+                set -l divergent_esc (printf '\e[38;5;9m')
+                set divergent_label " $divergent_esc(divergent)$reset"
+                set cid_color $divergent_esc
+                set st (string replace ' (divergent)' '' -- $st)
+                set st (string replace '(divergent) ' '' -- $st)
+                set st (string replace '(divergent)' '' -- $st)
+            end
+            set -l conflict_label ""
+            if string match -q '*(conflict)*' -- "$st"
+                set has_conflict 1
+                set conflict_label " $bold_brred(conflict)$reset"
+                set st (string replace ' (conflict)' '' -- $st)
+                set st (string replace '(conflict) ' '' -- $st)
+                set st (string replace '(conflict)' '' -- $st)
+            end
+            set -l status_color $bold_brgreen
+            if test "$st" = "*"
+                set status_color $bold_yellow
+            end
+            if test "$parts[7]" = true
+                set has_immutable 1
+            end
+            # Author (only shown if not mine)
+            set -l author_label ""
+            if test "$parts[2]" != "."
+                set -l author_color (printf '\e[38;5;3m')
+                set author_label " $author_color$parts[2]$reset"
+            end
+            # Bookmarks at @
+            set -l at_bookmarks ""
+            if test "$parts[3]" != "."
+                set -l at_bm_list
+                for bookmark in (string split ',' -- $parts[3])
+                    set bookmark (string trim -- $bookmark)
+                    if test -n "$bookmark"
+                        set -a at_bm_list "$bold_brmagenta$bookmark$reset"
+                    end
+                end
+                if test (count $at_bm_list) -gt 0
+                    set at_bookmarks " "(string join ' ' $at_bm_list)
+                end
+            end
+            # Show workspace if multiple workspaces exist
+            set -l workspace_label ""
+            set -l wc_count (jj workspace list --no-pager --color=never 2>/dev/null | count)
+            if test $wc_count -gt 1; and test -n "$parts[4]"
+                set -l bold_brgreen_color (set_color brgreen)
+                set workspace_label " $bold_brgreen_color$parts[4]$reset"
+            end
+            # Description (configurable via fish_jj_prompt_show_description and fish_jj_prompt_description_length)
+            set -l show_desc true
+            set -q fish_jj_prompt_show_description; and set show_desc $fish_jj_prompt_show_description
+            set -l desc_length 24
+            set -q fish_jj_prompt_description_length; and set desc_length $fish_jj_prompt_description_length
+            set -l desc_label ""
+            if test -n "$parts[8]"; and test "$show_desc" = true
+                set -l desc $parts[8]
+                if test $desc_length -gt 0; and test (string length -- $desc) -gt $desc_length
+                    set desc (string sub -l $desc_length -- $desc)"…"
+                end
+                if test "$parts[8]" = "(no desc)"
+                    set desc_label " $status_color$desc$reset"
+                else
+                    set desc_label " $desc"
+                end
+            end
+            set info "$cid_color$parts[1]$reset$author_label$at_bookmarks$workspace_label $bold_brblue$parts[5]$reset$conflict_label $status_color$st$reset$divergent_label$desc_label"
+        else if test $nparts -eq 2
+            # Ancestor with bookmarks: change_id, bookmarks
+            set -l cid $parts[1]
+            set -l depth_commits (jj log --no-pager --no-graph --ignore-working-copy --color=never \
+                -r "$cid::@ ~ $cid" -T '".\n"' 2>/dev/null)
+            set -l depth (count $depth_commits)
+            for bookmark in (string split ',' -- $parts[2])
+                set bookmark (string trim -- $bookmark)
+                if test -n "$bookmark"
+                    set -l nobold (printf '\e[22m')
+                    set -a display_bookmarks "$magenta$bookmark$nobold$magenta↑$depth$reset$bold"
+                end
+            end
+        end
+        # "." lines (nparts=1, not "B") just count toward ahead
+    end
+
+    # Assemble prompt
+    if test -n "$info"
+        if test (count $display_bookmarks) -gt 0
+            set info "$info "(string join ' ' $display_bookmarks)
+        end
+        set -l nobold (printf '\e[22m')
+        if test $ahead -gt 0
+            set info "$info $nobold$gray↑$ahead$reset"
+        end
+        if test $behind -gt 0
+            set info "$info $nobold$gray↓$behind$reset"
+        end
+        set -l at_color (set_color green)
+        if test $has_conflict -eq 1
+            set at_color (printf '\e[38;5;1m')
+        else if test $has_immutable -eq 1
+            set at_color (printf '\e[38;5;14m')
+        end
+        # set -l full_reset (set_color normal)
+        set jj_status $( printf '\e[39m(%s%s%s%s%s)' "$bold" "$at_color" @ "$reset $info" "$full_reset")
+    end
+    _tide_print_item jj $_tide_location_color$tide_jj_icon' ' (echo -ns "$jj_status";)
 end
