@@ -1,5 +1,12 @@
 # Changelog
 
+## [v7.0.10][] (???)
+
+### Bug fixes / improvements
+
+- Use git branch color for `jj` parentheses
+- add coloration to lean_16
+
 ## [v7.0.9][] (Apr 4 2026)
 
 ### Bug fixes / improvements
