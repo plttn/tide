@@ -1,6 +1,10 @@
 # Changelog
 
-##
+## [v7.0.9][] (???)
+
+### Bug fixes / improvements
+
+- Use tide scoped variables for configuring the jj item
 
 ## [v7.0.8][] (Apr 3 2026)
 
