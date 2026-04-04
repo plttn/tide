@@ -1,8 +1,18 @@
 # full credits to https://github.com/nertzy/fish_jj_prompt
 # for a lot of the logic here, modified for Tide
 function _tide_item_jj
-    if not command -sq jj; or not jj root --quiet &>/dev/null
+    if not command -sq jj
         return 1
+    end
+
+    # Walk up to find .jj/ repo root; check for disable file (no subprocess)
+    set -l d $PWD
+    while test -n "$d"
+        if test -d "$d/.jj"
+            test -f "$d/.disable-jj-prompt"; and return 1
+            break
+        end
+        set d (string replace -r '/[^/]*$' '' -- $d)
     end
 
     set -l tmpl '
