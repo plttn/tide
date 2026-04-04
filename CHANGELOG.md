@@ -1,6 +1,6 @@
 # Changelog
 
-## [v7.0.7][]
+## [v7.0.7][] (Apr 3 2026)
 
 ### Bug fixes / improvements
 
@@ -688,3 +688,4 @@ Tide now uses the [Fish transient prompt functionality](https://fishshell.com/do
 [v6.1.1]: https://github.com/IlanCosman/tide/tree/v6.1.1
 [v7.0.5]: https://github.com/plttn/tide/tree/v7.0.5
 [v7.0.6]: https://github.com/plttn/tide/tree/v7.0.6
+[v7.0.7]: https://github.com/plttn/tide/tree/v7.0.7
