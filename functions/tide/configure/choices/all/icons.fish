@@ -22,6 +22,7 @@ function _enable_icons
     set -g fake_tide_pwd_icon_home 
     set -g fake_tide_cmd_duration_icon 
     set -g fake_tide_git_icon 
+    set -g fake_tide_jj_icon 
 end
 
 function _disable_icons
@@ -30,4 +31,5 @@ function _disable_icons
     set fake_tide_pwd_icon_home
     set fake_tide_cmd_duration_icon
     set fake_tide_git_icon
+    set fake_tide_jj_icon
 end
