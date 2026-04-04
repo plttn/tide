@@ -698,3 +698,4 @@ Tide now uses the [Fish transient prompt functionality](https://fishshell.com/do
 [v7.0.5]: https://github.com/plttn/tide/tree/v7.0.5
 [v7.0.6]: https://github.com/plttn/tide/tree/v7.0.6
 [v7.0.7]: https://github.com/plttn/tide/tree/v7.0.7
+[v7.0.8]: https://github.com/plttn/tide/tree/v7.0.8
