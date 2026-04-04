@@ -169,7 +169,7 @@ if(self.contained_in("::trunk() & ~::@"),
                     set desc_label " $desc"
                 end
             end
-            set info "$cid_color$parts[1]$reset$author_label$at_bookmarks$workspace_label $bold_brblue$parts[5]$reset$conflict_label $status_color$st$reset$divergent_label$desc_label"
+            set info "$cid_color$parts[1]$reset$at_bookmarks$workspace_label $bold_brblue$parts[5]$reset$conflict_label $status_color$st$reset$divergent_label$desc_label"
         else if test $nparts -eq 2
             # Ancestor with bookmarks: change_id, bookmarks
             set -l cid $parts[1]
