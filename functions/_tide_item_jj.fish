@@ -1,3 +1,5 @@
+# full credits to https://github.com/nertzy/fish_jj_prompt
+# for a lot of the logic here, modified for Tide
 function _tide_item_jj
     if not command -sq jj; or not jj root --quiet &>/dev/null
         return 1
@@ -51,14 +53,26 @@ if(self.contained_in("::trunk() & ~::@"),
     or return 1
 
     # Colors
-    set -l bold_brmagenta (set_color brmagenta)
-    set -l magenta (set_color magenta)
-    set -l bold_brblue (set_color brblue)
-    set -l bold_brgreen (set_color brgreen)
-    set -l bold_brred (set_color brred)
-    set -l bold_yellow (set_color yellow)
-    set -l gray (set_color brblack)
-    set -l reset (printf '\e[39m')
+    # if bg color is normal, we can use matching jj colors
+    if test $tide_jj_bg_color = normal
+        set -f bold_brmagenta (set_color brmagenta)
+        set -f magenta (set_color magenta)
+        set -f bold_brblue (set_color brblue)
+        set -f bold_brgreen (set_color brgreen)
+        set -f bold_brred (set_color brred)
+        set -f bold_yellow (set_color yellow)
+        set -f gray (set_color brblack)
+        set -f reset (printf '\e[39m')
+    else # else we have a background, so we should just use the color controlled by the theme
+        set -f bold_brmagenta (set_color $tide_jj_color)
+        set -f magenta (set_color $tide_jj_color)
+        set -f bold_brblue (set_color $tide_jj_color)
+        set -f bold_brgreen (set_color $tide_jj_color)
+        set -f bold_brred (set_color $tide_jj_color)
+        set -f bold_yellow (set_color $tide_jj_color)
+        set -f gray (set_color $tide_jj_color)
+        set -l reset ()
+    end
 
     set -l use_bold true
     set -q fish_jj_prompt_bold; and set use_bold $fish_jj_prompt_bold
@@ -191,8 +205,11 @@ if(self.contained_in("::trunk() & ~::@"),
         else if test $has_immutable -eq 1
             set at_color (printf '\e[38;5;14m')
         end
-        # set -l full_reset (set_color normal)
-        set jj_status $( printf '\e[39m(%s%s%s%s%s)' "$bold" "$at_color" @ "$reset $info" "$full_reset")
+        if test $tide_jj_bg_color = normal # prints as normal
+            set jj_status $( printf '\e[39m(%s%s%s%s%s)' "$bold" "$at_color" @ "$reset $info" "$full_reset")
+        else # prints with bg support
+            set jj_status (printf '(%s%s)'  @  " $info" )
+        end
     end
-    _tide_print_item jj $_tide_location_color$tide_jj_icon' ' (echo -ns "$jj_status";)
+    _tide_print_item jj $tide_jj_icon' ' (echo -ns "$jj_status";)
 end
