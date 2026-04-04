@@ -46,7 +46,7 @@ tide_go_bg_color normal
 tide_go_color 00ACD7
 tide_java_bg_color normal
 tide_java_color ED8B00
-tide_jj_color green
+tide_jj_color $_tide_color_green
 tide_jj_bg_color normal
 tide_jobs_bg_color normal
 tide_jobs_color $_tide_color_dark_green
