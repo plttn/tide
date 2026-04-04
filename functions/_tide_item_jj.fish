@@ -205,8 +205,9 @@ if(self.contained_in("::trunk() & ~::@"),
         else if test $has_immutable -eq 1
             set at_color (printf '\e[38;5;14m')
         end
+        set -l parentheses_color (set_color $tide_jj_color)
         if test $tide_jj_bg_color = normal # prints as normal
-            set jj_status $( printf '\e[39m(%s%s%s%s%s)' "$bold" "$at_color" @ "$reset $info" "$full_reset")
+            set jj_status $( printf '\e[39m%s(%s%s%s%s%s)' "$parentheses_color" "$reset$bold" "$at_color" @ "$reset $info" "$full_reset$parentheses_color" )
         else # prints with bg support
             set jj_status (printf '(%s%s)'  @  " $info" )
         end
