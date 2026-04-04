@@ -1,5 +1,12 @@
 # Changelog
 
+## [v7.0.7][]
+
+### Bug fixes / improvements
+
+- Improves the JJ prompt to be cleaner and provide more pertinent information.
+  All credit for the prompt goes to [the work here](https://github.com/nertzy/fish_jj_prompt)
+
 ## [v7.0.6][] (Mar 13 2026)
 
 ### Bug fixes
