@@ -5,15 +5,8 @@ function _tide_item_jj
         return 1
     end
 
-    # Walk up to find .jj/ repo root; check for disable file (no subprocess)
-    set -l d $PWD
-    while test -n "$d"
-        if test -d "$d/.jj"
-            test -f "$d/.disable-jj-prompt"; and return 1
-            break
-        end
-        set d (string replace -r '/[^/]*$' '' -- $d)
-    end
+    _tide_internal_jj_git
+    test $status -eq 0; or return 1
 
     set -l tmpl '
 if(self.contained_in("::trunk() & ~::@"),

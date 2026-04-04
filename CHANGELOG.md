@@ -1,5 +1,11 @@
 # Changelog
 
+## [v7.0.11][] (Apr 4 2026)
+
+### Bug fixes / improvements
+
+- Don't subprocess to check if we're in a jj folder
+
 ## [v7.0.10][] (Apr 4 2026)
 
 ### Bug fixes / improvements

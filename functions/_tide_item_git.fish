@@ -1,9 +1,8 @@
 function _tide_item_git
 
     if command -sq jj
-        if jj root --quiet &>/dev/null
-            return 1
-        end
+        _tide_internal_jj_git
+        test $status -eq 0; and return 1
     end
 
     if git branch --show-current 2>/dev/null | string shorten -"$tide_git_truncation_strategy"m$tide_git_truncation_length | read -l location

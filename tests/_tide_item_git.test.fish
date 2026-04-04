@@ -25,6 +25,15 @@ _git branch -m main
 # Branch
 _git_item # CHECK: main
 
+# JJ repo hides git item unless explicitly disabled via .disable-jj-prompt
+mock jj \* true
+mkdir .jj
+_git_item # CHECK:
+touch .disable-jj-prompt
+_git_item # CHECK: main ?1
+command rm .disable-jj-prompt
+command rm -r .jj
+
 # .git dir
 cd .git/
 _git_item # CHECK: main
