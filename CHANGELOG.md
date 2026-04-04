@@ -1,5 +1,14 @@
 # Changelog
 
+##
+
+## [v7.0.8][] (Apr 3 2026)
+
+### Bug fixes / improvements
+
+- Shortens the JJ item to avoid making the prompt too wide.
+  Configuration options listed in wiki
+
 ## [v7.0.7][] (Apr 3 2026)
 
 ### Bug fixes / improvements

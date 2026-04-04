@@ -127,18 +127,16 @@ if(self.contained_in("::trunk() & ~::@"),
             end
             # Author (only shown if not mine)
             set -l author_label ""
-            if test "$parts[2]" != "."
-                set -l author_color (printf '\e[38;5;3m')
-                set author_label " $author_color$parts[2]$reset"
-            end
+
             # Bookmarks at @
             set -l at_bookmarks ""
             if test "$parts[3]" != "."
                 set -l at_bm_list
                 for bookmark in (string split ',' -- $parts[3])
-                    set bookmark (string trim -- $bookmark)
-                    if test -n "$bookmark"
-                        set -a at_bm_list "$bold_brmagenta$bookmark$reset"
+                    set full_bookmark (string trim -- $bookmark)
+                    set bm_components (string split "/" -- $full_bookmark)
+                    if test -n "$bm_components[-1]"
+                        set -a at_bm_list "$bold_brmagenta$bm_components[-1]$reset"
                     end
                 end
                 if test (count $at_bm_list) -gt 0
