@@ -151,10 +151,11 @@ if(self.contained_in("::trunk() & ~::@"),
                 set workspace_label " $bold_brgreen_color$parts[4]$reset"
             end
             # Description (configurable via fish_jj_prompt_show_description and fish_jj_prompt_description_length)
+
             set -l show_desc true
-            set -q fish_jj_prompt_show_description; and set show_desc $fish_jj_prompt_show_description
+            set -q tide_jj_show_description; and set show_desc $tide_jj_show_description
             set -l desc_length 24
-            set -q fish_jj_prompt_description_length; and set desc_length $fish_jj_prompt_description_length
+            set -q tide_jj_description_length; and set desc_length $tide_jj_description_length
             set -l desc_label ""
             if test -n "$parts[8]"; and test "$show_desc" = true
                 set -l desc $parts[8]
