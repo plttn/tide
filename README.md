@@ -91,23 +91,6 @@ From the smallest typo to the largest feature, contributions of any size or expe
 
 If you're interested in helping contribute to Tide, please take a look at the [Contributing Guide][].
 
-## Fonts
-
-### Meslo Nerd Font
-
-A gorgeous monospace font designed by Jim Lyles for Bitstream, customized for Apple, enhanced by André Berg, and finally patched by Roman Perepelitsa of [Powerlevel10k][] with scripts originally developed by Ryan McIntyre of [Nerd Fonts][]. Contains all the glyphs and symbols that Tide may need. Battle-tested in dozens of different terminals on all major operating systems.
-
-### Font Installation
-
-Download these four ttf files:
-
-- [MesloLGS NF Regular.ttf][]
-- [MesloLGS NF Bold.ttf][]
-- [MesloLGS NF Italic.ttf][]
-- [MesloLGS NF Bold Italic.ttf][]
-
-Open each file and click "Install". This will make the `MesloLGS NF` font available to all applications on your system. Configure your terminal to use this font.
-
 ## Acknowledgments
 
 - [Powerlevel10k][] - Inspired Tide's creation. Because Tide aims to replicate Powerlevel10k's amazing capabilities, small sections of documentation have been borrowed when rewording the language would reduce clarity.
@@ -120,13 +103,9 @@ Open each file and click "Install". This will make the `MesloLGS NF` font availa
 [contributing guide]: CONTRIBUTING.md
 [fish]: https://fishshell.com/
 [fisher]: https://github.com/jorgebucaran/fisher
-[meslolgs nf bold italic.ttf]: https://github.com/IlanCosman/tide/blob/assets/fonts/mesloLGS_NF_bold_italic.ttf?raw=true
-[meslolgs nf bold.ttf]: https://github.com/IlanCosman/tide/blob/assets/fonts/mesloLGS_NF_bold.ttf?raw=true
-[meslolgs nf italic.ttf]: https://github.com/IlanCosman/tide/blob/assets/fonts/mesloLGS_NF_italic.ttf?raw=true
-[meslolgs nf regular.ttf]: https://github.com/IlanCosman/tide/blob/assets/fonts/mesloLGS_NF_regular.ttf?raw=true
 [nerd fonts]: https://github.com/ryanoasis/nerd-fonts
 [powerlevel10k]: https://github.com/romkatv/powerlevel10k/
 [spacefish]: https://github.com/matchai/spacefish
 [starship]: https://github.com/starship/starship
-[using an older version of fish?]:https://github.com/plttn/tide/wiki/Fish-version-compatibility
+[using an older version of fish?]: https://github.com/plttn/tide/wiki/Fish-version-compatibility
 [wiki]: https://github.com/IlanCosman/tide/wiki
