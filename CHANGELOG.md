@@ -1,5 +1,13 @@
 # Changelog
 
+## [v7.0.12][] (???)
+
+### Security Bug Fix
+
+- **Fix mode-changing injection**
+
+This is a **strongly** recommended update.
+
 ## [v7.0.11][] (Apr 4 2026)
 
 ### Bug fixes / improvements
