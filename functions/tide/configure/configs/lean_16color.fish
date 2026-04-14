@@ -1,9 +1,9 @@
+tide_actnetwork_bg_color 4E9A06
+tide_actnetwork_color normal
 tide_aws_bg_color normal
 tide_aws_color yellow
 tide_bun_bg_color normal
 tide_bun_color white
-tide_character_color brgreen
-tide_character_color_failure brred
 tide_cmd_duration_bg_color normal
 tide_cmd_duration_color brblack
 tide_context_bg_color normal
@@ -12,8 +12,8 @@ tide_context_color_root bryellow
 tide_context_color_ssh yellow
 tide_crystal_bg_color normal
 tide_crystal_color brwhite
-tide_direnv_bg_color normal
 tide_direnv_bg_color_denied normal
+tide_direnv_bg_color normal
 tide_direnv_color bryellow
 tide_direnv_color_denied brred
 tide_distrobox_bg_color normal
@@ -37,6 +37,8 @@ tide_git_color_untracked brblue
 tide_git_color_upstream brgreen
 tide_go_bg_color normal
 tide_go_color brcyan
+tide_character_color brgreen
+tide_character_color_failure brred
 tide_java_bg_color normal
 tide_java_color yellow
 tide_jj_bg_color normal
@@ -71,10 +73,10 @@ tide_rustc_bg_color normal
 tide_rustc_color red
 tide_shlvl_bg_color normal
 tide_shlvl_color yellow
-tide_status_bg_color normal
 tide_status_bg_color_failure normal
-tide_status_color green
+tide_status_bg_color normal
 tide_status_color_failure red
+tide_status_color green
 tide_sudo_bg_color normal
 tide_sudo_color brblack
 tide_terraform_bg_color normal
