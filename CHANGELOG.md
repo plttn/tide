@@ -4,9 +4,11 @@
 
 ### Security Bug Fix
 
-- **Fix mode-changing injection**
+- **Fix mode-changing injection via working directory**
 
 This is a **strongly** recommended update.
+
+More details to come.
 
 ## [v7.0.11][] (Apr 4 2026)
 
