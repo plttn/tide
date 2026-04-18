@@ -25,7 +25,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: fish-actions/install-fish@v1
-      - run: make test -C "$GITHUB_WORKSPACE"
+      - uses: jdx/mise-action@v2
+      - run: mise run test
 
   syntax-check:
     runs-on: ubuntu-latest
