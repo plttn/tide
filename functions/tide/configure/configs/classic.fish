@@ -54,7 +54,7 @@ tide_jobs_number_threshold 1000
 tide_kubectl_bg_color 444444
 tide_kubectl_color 326CE5
 tide_left_prompt_frame_enabled true
-tide_left_prompt_items pwd git jj newline
+tide_left_prompt_items pwd vcs newline
 tide_left_prompt_prefix ''
 tide_left_prompt_separator_diff_color 
 tide_left_prompt_separator_same_color 

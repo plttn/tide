@@ -1,7 +1,7 @@
 function _tide_remove_unusable_items --on-variable PATH
     # Remove tool-specific items for tools the machine doesn't have installed
     set -l removed_items
-    for item in aws bun crystal direnv distrobox docker elixir gcloud git go java jj kubectl nix_shell node php pulumi python ruby rustc terraform toolbox zig
+    for item in aws bun crystal direnv distrobox docker elixir gcloud go java kubectl nix_shell node php pulumi python ruby rustc terraform toolbox vcs zig
         contains $item $tide_left_prompt_items $tide_right_prompt_items || continue
 
         set -l cli_names $item
@@ -12,6 +12,8 @@ function _tide_remove_unusable_items --on-variable PATH
                 set cli_names nix nix-shell
             case python
                 set cli_names python python3
+            case vcs
+                set cli_names git
         end
         type --query $cli_names || set -a removed_items $item
     end

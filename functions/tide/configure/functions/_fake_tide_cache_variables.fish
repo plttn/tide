@@ -4,8 +4,8 @@ function _fake_tide_cache_variables
     set -gx _fake_tide_color_truncated_dirs "$(set_color $fake_tide_pwd_color_truncated_dirs)"
     set -gx _fake_tide_reset_to_color_dirs (set_color normal -b $fake_tide_pwd_bg_color; set_color $fake_tide_pwd_color_dirs)
 
-    # git
-    contains git $fake_tide_left_prompt_items $fake_tide_right_prompt_items &&
+    # vcs
+    contains vcs $fake_tide_left_prompt_items $fake_tide_right_prompt_items &&
         set -gx _fake_tide_location_color "$(set_color $fake_tide_git_color_branch)"
 
     # private_mode

@@ -35,6 +35,8 @@ function _tide_init_update --on-event _tide_init_update
 
     # Set (disable) the new jobs variable
     set -q tide_jobs_number_threshold || set -U tide_jobs_number_threshold 1000
+
+    _tide_migrate_vcs_prompt_items
 end
 
 function _tide_init_uninstall --on-event _tide_init_uninstall
