@@ -1,5 +1,11 @@
 # Changelog
 
+## [v7.0.14][] (???)
+
+### Bug fixes
+
+- Ensure that `tide_item_vcs` prints properly on themes with backgrounds
+
 ## [v7.0.13][] (Apr 18 2026)
 
 ### Improvements
