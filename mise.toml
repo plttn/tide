@@ -10,7 +10,7 @@ run = 'find . -name "*.fish" -type f -print0 | xargs -0 -n1 fish --no-execute'
 description = 'Install Tide and test dependencies via fisher'
 run = '''
 fish -c 'type -q fisher || begin; curl -sL https://git.io/fisher | source; fisher install jorgebucaran/fisher; end'
-fish -c 'fisher install . >/dev/null'
+fish -c 'if test -e ~/.config/fish/functions/tide.fish; else; fisher install . >/dev/null; end'
 '''
 
 [tasks.littlecheck]
@@ -35,7 +35,6 @@ run = 'rm -f littlecheck.py'
 [tasks.all]
 description = 'Format, lint, install, and test'
 depends = ['fmt', 'lint', 'install', 'test']
-
 [tasks.release]
 confirm = 'Are you sure you want to cut a new release?'
 description = 'Cut a new release'

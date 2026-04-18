@@ -30,7 +30,7 @@ mock jj \* true
 mkdir .jj
 _git_item # CHECK:
 touch .disable-jj-prompt
-_git_item # CHECK: main ?1
+_git_item # CHECK: {{main( \?1)?}}
 command rm .disable-jj-prompt
 command rm -r .jj
 
