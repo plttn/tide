@@ -54,7 +54,7 @@ tide_jj_bg_color 4E9A06
 tide_kubectl_bg_color 326CE5
 tide_kubectl_color 000000
 tide_left_prompt_frame_enabled true
-tide_left_prompt_items pwd git jj newline
+tide_left_prompt_items pwd vcs newline
 tide_left_prompt_prefix ''
 tide_left_prompt_separator_diff_color 
 tide_left_prompt_separator_same_color 
