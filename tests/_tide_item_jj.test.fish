@@ -5,9 +5,10 @@ function _jj_item
     _tide_decolor (_tide_item_jj)
 end
 
-set -l jj_mock_script 'if string match -q "log *" -- "$argv"
+set -l jj_mock_script 'set -l cmd (string join " " -- $argv)
+    if string match -q "log *" -- "$cmd"
         printf "abc123\t.\tbookmark/main\tdefault\tdef456\t*\tfalse\tdesc\n"
-    else if string match -q "workspace list *" -- "$argv"
+    else if string match -q "workspace list *" -- "$cmd"
         printf "default\n"
     else
         true
