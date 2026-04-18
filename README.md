@@ -17,7 +17,7 @@
 ### System Requirements
 
 - The **latest** version of [Fish][], currently 4.6.0. <sup><sub>[Using an older version of Fish?][]</sub></sup>
-- A [Nerd Font][nerd fonts] installed and enabled in your terminal (for example the [recommended font](#fonts)).
+- A [Nerd Font][nerd fonts] installed and enabled in your terminal (or your terminal already supports [fallback fonts](#fallback-font-support) with Nerd Font support).
 
 Install with [Fisher][]:
 
@@ -97,7 +97,25 @@ If you're interested in helping contribute to Tide, please take a look at the [C
 - [Starship][] - Inspired elements of Tide's documentation and community health files.
 - [Spacefish][] - Inspired some of Tide's items.
 
-[`items`]: https://github.com/IlanCosman/tide/wiki/Configuration#items
+## Appendix
+
+### Fallback Font Support
+
+Many terminal emulators already support fallback fonts, so patching your font isn't
+necessary.
+
+#### Enabled by default
+
+- Ghostty
+- Wezterm
+- kitty
+- Windows Terminal
+
+#### Enabled as option
+
+- [iTerm](https://iterm2.com/documentation-preferences-profiles-text.html)
+
+[`items`]: https://github.com/plttn/tide/wiki/Configuration#items
 [async]: https://github.com/IlanCosman/tide/blob/assets/animations/async.png
 [configuration_wizard]: https://github.com/IlanCosman/tide/blob/assets/animations/configuration_wizard.webp
 [contributing guide]: CONTRIBUTING.md
@@ -108,4 +126,4 @@ If you're interested in helping contribute to Tide, please take a look at the [C
 [spacefish]: https://github.com/matchai/spacefish
 [starship]: https://github.com/starship/starship
 [using an older version of fish?]: https://github.com/plttn/tide/wiki/Fish-version-compatibility
-[wiki]: https://github.com/IlanCosman/tide/wiki
+[wiki]: https://github.com/plttn/tide/wiki
