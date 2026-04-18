@@ -22,6 +22,9 @@ cd $dir/no-jj
 _jj_item # CHECK:
 
 cd $dir/jj-repo
+_jj_item # CHECK: (@ abc123 main def456 * desc ↑1)
+
+set -g tide_jj_show_description false
 _jj_item # CHECK: (@ abc123 main def456 * ↑1)
 
 touch .disable-jj-prompt

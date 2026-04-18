@@ -1,7 +1,7 @@
 SHELL := /usr/bin/env fish
 
 .PHONY: all
-all: fmt lint install test
+all: fmt lint test
 
 .PHONY: fmt
 fmt:
@@ -20,12 +20,8 @@ littlecheck.py:
 	@curl -sL https://raw.githubusercontent.com/ridiculousfish/littlecheck/HEAD/littlecheck/littlecheck.py -o littlecheck.py
 
 .PHONY: test
-test: install littlecheck.py
-	@type -q mock || fisher install IlanCosman/clownfish
-	@fish tests/test_cleanup.fish
-	@fish tests/test_setup.fish
-	@_tide_remove_unusable_items
-	@begin; _tide_cache_variables; python3 littlecheck.py --progress tests/**.test.fish; set -l test_status $$status; fish tests/test_cleanup.fish; exit $$test_status; end
+test: littlecheck.py
+	@begin; set -l test_home (mktemp -d); env HOME=$$test_home XDG_CONFIG_HOME=$$test_home/.config fish -c 'type -q fisher || begin; curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher; end; fisher install . >/dev/null; type -q mock || fisher install IlanCosman/clownfish; fish tests/test_cleanup.fish; fish tests/test_setup.fish; _tide_remove_unusable_items; _tide_cache_variables; python3 littlecheck.py --progress tests/**.test.fish; set -l test_status $$status; fish tests/test_cleanup.fish; exit $$test_status'; set -l test_status $$status; command rm -rf $$test_home; exit $$test_status; end
 
 .PHONY: clean
 clean:
