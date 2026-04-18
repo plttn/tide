@@ -35,17 +35,17 @@ Examples:
 - Items begin with `_tide_item_`
 - Subcommands begin with `_tide_sub_`
 
-## Makefile
+## Mise Tasks
 
 Pretty self explanatory.
 
-- `make all`
-- `make fmt`
-- `make lint`
-- `make install`
-- `make test`
+- `mise run all`
+- `mise run fmt`
+- `mise run lint`
+- `mise run install`
+- `mise run test`
 
-In general, just run `make` to do everything.
+In general, just run `mise run all` to do everything.
 
 ### Specifics
 

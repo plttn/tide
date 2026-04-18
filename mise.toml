@@ -1,3 +1,41 @@
+[tasks.fmt]
+description = 'Format fish files'
+run = 'find . -name "*.fish" -type f -print0 | xargs -0 fish_indent --write'
+
+[tasks.lint]
+description = 'Syntax-check fish files'
+run = 'find . -name "*.fish" -type f -print0 | xargs -0 -n1 fish --no-execute'
+
+[tasks.install]
+description = 'Install Tide and test dependencies via fisher'
+run = '''
+fish -c 'type -q fisher || begin; curl -sL https://git.io/fisher | source; fisher install jorgebucaran/fisher; end'
+fish -c 'fisher install . >/dev/null'
+'''
+
+[tasks.littlecheck]
+description = 'Download littlecheck test runner'
+run = 'curl -sL https://raw.githubusercontent.com/ridiculousfish/littlecheck/HEAD/littlecheck/littlecheck.py -o littlecheck.py'
+
+[tasks.test]
+description = 'Run test suite'
+depends = ['install', 'littlecheck']
+run = '''
+fish -c 'type -q mock || fisher install IlanCosman/clownfish'
+fish tests/test_cleanup.fish
+fish tests/test_setup.fish
+fish -c '_tide_remove_unusable_items'
+fish -c 'begin; _tide_cache_variables; python3 littlecheck.py --progress tests/**.test.fish; set -l test_status $status; fish tests/test_cleanup.fish; exit $test_status; end'
+'''
+
+[tasks.clean]
+description = 'Remove generated test helper'
+run = 'rm -f littlecheck.py'
+
+[tasks.all]
+description = 'Format, lint, install, and test'
+depends = ['fmt', 'lint', 'install', 'test']
+
 [tasks.release]
 confirm = 'Are you sure you want to cut a new release?'
 description = 'Cut a new release'
