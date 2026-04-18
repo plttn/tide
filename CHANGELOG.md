@@ -2,7 +2,7 @@
 
 ## [v7.0.13][] (Apr 18 2026)
 
-## Improvements
+### Improvements
 
 - Unify `git`/`jj` into a single VCS item
   `fisher update` will convert a `tide_items` that contains either `git` or `jj` into `vcs`, merging if necessary.
