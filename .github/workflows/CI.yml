@@ -44,6 +44,9 @@ jobs:
 
   mega-linter:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
       - uses: oxsecurity/megalinter/flavors/documentation@v9
