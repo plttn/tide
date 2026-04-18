@@ -48,9 +48,7 @@ fi
 
 # 4. Commit and push
 git add "$TIDE_FISH" "$CHANGELOG"
-git commit -m "$TAG
-
-Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+git commit -m "$TAG"
 git push
 
 # 5. Extract release notes from CHANGELOG (content between first and second ## headings)
