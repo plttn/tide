@@ -213,7 +213,7 @@ if(self.contained_in("::trunk() & ~::@"),
             end
         end
 
-        _tide_print_item vcs $tide_jj_icon' ' (echo -ns "$jj_status";)
+        _tide_print_item jj $tide_jj_icon' ' (echo -ns "$jj_status";)
         return
     end
 
@@ -279,7 +279,7 @@ if(self.contained_in("::trunk() & ~::@"),
         set -g tide_git_bg_color $tide_git_bg_color_unstable
     end
 
-    _tide_print_item vcs $_tide_location_color$tide_git_icon' ' (set_color white; echo -ns $location
+    _tide_print_item git $_tide_location_color$tide_git_icon' ' (set_color white; echo -ns $location
         set_color $tide_git_color_operation; echo -ns ' '$operation ' '$step/$total_steps
         set_color $tide_git_color_upstream; echo -ns ' ⇣'$behind ' ⇡'$ahead
         set_color $tide_git_color_stash; echo -ns ' *'$stash
