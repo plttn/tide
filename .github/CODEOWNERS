@@ -1,1 +1,3 @@
 .github/ @plttn
+functions/_tide_item_vcs.fish @plttn
+functions/_tide_internal_jj_git.fish @plttn
