@@ -2,7 +2,7 @@
 
 set -l inner_cmd "
 type -q fisher || begin
-    curl -sL https://git.io/fisher | source
+    curl -sL https://git.io/fisher | source #when running in CI like GHA, we'll have already installed Fisher so this is a no-op
     fisher install jorgebucaran/fisher
 end
 fisher install . >/dev/null
