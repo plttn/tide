@@ -1,5 +1,12 @@
 # Changelog
 
+## [v7.0.15][] (???)
+
+### Bug fixes
+
+- Use `--ignore-working-copy` for JJ workspace detection to avoid snapshotting
+  every prompt redraw.
+
 ## [v7.0.14][] (Apr 18 2026)
 
 ### Bug fixes
