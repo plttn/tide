@@ -1,9 +1,9 @@
+tide_actnetwork_bg_color 4E9A06
+tide_actnetwork_color normal
 tide_aws_bg_color FF9900
 tide_aws_color 232F3E
 tide_bun_bg_color FBF0DF
 tide_bun_color 14151A
-tide_character_color $_tide_color_green
-tide_character_color_failure FF0000
 tide_cmd_duration_bg_color C4A000
 tide_cmd_duration_color 000000
 tide_cmd_duration_decimals 0
@@ -18,8 +18,8 @@ tide_crystal_bg_color FFFFFF
 tide_crystal_color 000000
 tide_direnv_bg_color $_tide_color_gold
 tide_direnv_bg_color_denied FF0000
-tide_direnv_color 000000
 tide_direnv_color_denied 000000
+tide_direnv_color 000000
 tide_distrobox_bg_color FF00FF
 tide_distrobox_color 000000
 tide_docker_bg_color 2496ED
@@ -29,9 +29,9 @@ tide_elixir_bg_color 4E2A8E
 tide_elixir_color 000000
 tide_gcloud_bg_color 4285F4
 tide_gcloud_color 000000
-tide_git_bg_color 4E9A06
 tide_git_bg_color_unstable C4A000
 tide_git_bg_color_urgent CC0000
+tide_git_bg_color 4E9A06
 tide_git_color_branch 000000
 tide_git_color_conflicted 000000
 tide_git_color_dirty 000000
@@ -44,13 +44,15 @@ tide_git_truncation_length 24
 tide_git_truncation_strategy
 tide_go_bg_color 00ACD7
 tide_go_color 000000
+tide_character_color $_tide_color_green
+tide_character_color_failure FF0000
 tide_java_bg_color ED8B00
 tide_java_color 000000
+tide_jj_bg_color 4E9A06
+tide_jj_color 000000
 tide_jobs_bg_color 444444
 tide_jobs_color 4E9A06
 tide_jobs_number_threshold 1000
-tide_jj_color 000000
-tide_jj_bg_color 4E9A06
 tide_kubectl_bg_color 326CE5
 tide_kubectl_color 000000
 tide_left_prompt_frame_enabled true
@@ -97,10 +99,10 @@ tide_rustc_color 000000
 tide_shlvl_bg_color 808000
 tide_shlvl_color 000000
 tide_shlvl_threshold 1
-tide_status_bg_color 2E3436
 tide_status_bg_color_failure CC0000
-tide_status_color 4E9A06
+tide_status_bg_color 2E3436
 tide_status_color_failure FFFF00
+tide_status_color 4E9A06
 tide_sudo_bg_color D3D7CF
 tide_sudo_color 000000
 tide_terraform_bg_color 800080

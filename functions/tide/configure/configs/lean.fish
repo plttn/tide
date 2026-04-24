@@ -1,9 +1,9 @@
+tide_actnetwork_bg_color 4E9A06
+tide_actnetwork_color normal
 tide_aws_bg_color normal
 tide_aws_color FF9900
 tide_bun_bg_color normal
 tide_bun_color FBF0DF
-tide_character_color $_tide_color_green
-tide_character_color_failure FF0000
 tide_cmd_duration_bg_color normal
 tide_cmd_duration_color 87875F
 tide_cmd_duration_decimals 0
@@ -16,8 +16,8 @@ tide_context_color_ssh D7AF87
 tide_context_hostname_parts 1
 tide_crystal_bg_color normal
 tide_crystal_color FFFFFF
-tide_direnv_bg_color normal
 tide_direnv_bg_color_denied normal
+tide_direnv_bg_color normal
 tide_direnv_color $_tide_color_gold
 tide_direnv_color_denied FF0000
 tide_distrobox_bg_color normal
@@ -44,10 +44,12 @@ tide_git_truncation_length 24
 tide_git_truncation_strategy
 tide_go_bg_color normal
 tide_go_color 00ACD7
+tide_character_color $_tide_color_green
+tide_character_color_failure FF0000
 tide_java_bg_color normal
 tide_java_color ED8B00
-tide_jj_color $_tide_color_green
 tide_jj_bg_color normal
+tide_jj_color $_tide_color_green
 tide_jobs_bg_color normal
 tide_jobs_color $_tide_color_dark_green
 tide_jobs_number_threshold 1000
@@ -97,8 +99,8 @@ tide_rustc_color F74C00
 tide_shlvl_bg_color normal
 tide_shlvl_color d78700
 tide_shlvl_threshold 1
-tide_status_bg_color normal
 tide_status_bg_color_failure normal
+tide_status_bg_color normal
 tide_status_color $_tide_color_dark_green
 tide_status_color_failure D70000
 tide_sudo_bg_color normal
