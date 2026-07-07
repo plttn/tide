@@ -130,5 +130,16 @@ mkdir -p "$tmpdir/tmp/[hello"
 _pwd $tmpdir/tmp/$longDirWithDot # CHECK: ~/t/[t/b/c/d/e/f/golf/hotel/india/juliett/kilo/lima/mike/november/oscar/papa
 command rm -r "$tmpdir/tmp/[hello"
 
+# ---------- Truncation when an ancestor directory is unreadable ----------
+# Regression test for #11 / #43: an execute-only (no read) ancestor makes the
+# disambiguation glob come back empty. `cd` still works since it only needs +x,
+# but `contains` can't find the current dir in an empty glob, and erasing with
+# that empty result used to crash with "set: --erase: option requires an argument".
+mkdir -p $tmpdir/tmp/noread/$longDir
+chmod 100 $tmpdir/tmp/noread
+_pwd $tmpdir/tmp/noread/$longDir # CHECK: ~/t/n/a/b/c/d/e/f/golf/hotel/india/juliett/kilo/lima/mike/november/oscar/papa
+chmod 700 $tmpdir/tmp/noread
+command rm -r $tmpdir/tmp/noread
+
 # ------------------------------------Cleanup------------------------------------
 command rm -r $tmpdir
