@@ -20,8 +20,14 @@ exit \$test_status
 if test "$GITHUB_ACTIONS" = true #we can just have it work normally in CI, since it runs in a clean environment
     fish -c $inner_cmd
 else
-    set -l test_home (mktemp -d)
+    # Reuse a persistent HOME across local runs (shared across worktrees) so
+    # fisher/clownfish aren't reinstalled over the network every time. `fisher
+    # install .` still runs unconditionally, so local edits are always synced.
+    # Run `mise run test-clean` to wipe it if it ever gets into a bad state.
+    set -l cache_home $XDG_CACHE_HOME
+    test -n "$cache_home" || set cache_home $HOME/.cache
+    set -l test_home $cache_home/tide-test-home
+    mkdir -p $test_home
     env HOME=$test_home XDG_CONFIG_HOME=$test_home/.config fish -c $inner_cmd
-    command rm -rf $test_home
 end
 exit $status
