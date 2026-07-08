@@ -1,5 +1,17 @@
 # Changelog
 
+## [7.0.16](https://github.com/plttn/tide/compare/v7.0.15...v7.0.16) (2026-07-08)
+
+
+### Bug Fixes
+
+* **pwd:** only clear glob when contains fails, not unconditionally ([#43](https://github.com/plttn/tide/issues/43)) ([5837b85](https://github.com/plttn/tide/commit/5837b85a0d3d393538dada44049f1dcf4516fa9f))
+
+
+### Performance Improvements
+
+* **vcs:** reduce git process count in git fallback from 5 to 3 ([#47](https://github.com/plttn/tide/issues/47)) ([8b7735b](https://github.com/plttn/tide/commit/8b7735b537d77566b7989be42a6aab280d492f26))
+
 ## [v7.0.15][] (Apr 19 2026)
 
 ### Bug fixes
