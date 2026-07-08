@@ -17,6 +17,18 @@ If you have any questions that aren't addressed in this document, please don't h
   - For anything more complex use `if`, `else`, and `else if`
 - Piping > command substitution (only when convenient, i.e no extra commands)
 
+### Pull Request Titles
+
+PR titles must follow [Conventional Commits][]: `<type>[(scope)][!]: <description>`,
+e.g. `fix: correct jj branch color` or `feat(vcs)!: unify git/jj into a single item`.
+
+- Allowed types: `feat`, `fix`, `build`, `chore`, `ci`, `docs`, `style`, `refactor`, `perf`, `test`.
+- Add `!` before the `:` (or a `BREAKING CHANGE:` footer) for breaking changes.
+
+This isn't just style: since PRs are squash-merged, the title becomes the
+commit message on `main`, which [release-please][] reads to generate the
+next release's changelog entry. A CI check enforces this on every PR.
+
 ### Naming Conventions
 
 - Everything should be in `snake_case`.
@@ -82,17 +94,27 @@ All links should be in reference style, with references at the bottom of the doc
 - Extendable: 13pt, 55x9
 - PWD: 17pt, 42x14
 
-## Release Checklist
+## Releasing
 
-- [ ] Update version number in `tide.fish`
-- [ ] Put the current date in the changelog
-- [ ] Make a commit containing above edits, titled with the version number
-- [ ] Create a new tag
-- [ ] Push to GitHub
+Releases are automated by [release-please][]. It watches `main` and keeps an
+open "release PR" containing the next version bump and a generated
+`CHANGELOG.md` entry, derived from Conventional Commit PR titles merged
+since the last release.
+
+- [ ] Before merging the release PR, hand-edit its `CHANGELOG.md` diff to
+      clean up the generated bullets into prose, and add any narrative
+      notes (e.g. security callouts, migration instructions, wiki links)
+- [ ] Merge the release PR
+- [ ] release-please tags the release, publishes it on GitHub, and updates
+      `functions/tide.fish`'s version string automatically
+- [ ] The floating `vN`/`vN.M` convenience tags (used by `fisher install
+      plttn/tide@v7`) update automatically in a follow-up job
 
 [`fish --no-execute`]: https://fishshell.com/docs/current/cmds/fish.html
 [`fish_indent`]: https://fishshell.com/docs/current/cmds/fish_indent.html
 [clownfish]: https://github.com/IlanCosman/clownfish
+[conventional commits]: https://www.conventionalcommits.org/
 [littlecheck]: https://github.com/ridiculousfish/littlecheck
 [mega-linter]: https://github.com/nvuillam/mega-linter
 [prettier]: https://github.com/prettier/prettier
+[release-please]: https://github.com/googleapis/release-please

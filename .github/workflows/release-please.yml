@@ -1,0 +1,44 @@
+name: Release Please
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      major: ${{ steps.release.outputs.major }}
+      minor: ${{ steps.release.outputs.minor }}
+    steps:
+      - uses: googleapis/release-please-action@v5
+        id: release
+
+  update-floating-tags:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - name: Tag major and minor versions
+        env:
+          MAJOR: ${{ needs.release-please.outputs.major }}
+          MINOR: ${{ needs.release-please.outputs.minor }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -d "v$MAJOR" || true
+          git tag -d "v$MAJOR.$MINOR" || true
+          git push origin ":v$MAJOR" || true
+          git push origin ":v$MAJOR.$MINOR" || true
+          git tag -a "v$MAJOR" -m "Release v$MAJOR"
+          git tag -a "v$MAJOR.$MINOR" -m "Release v$MAJOR.$MINOR"
+          git push origin "v$MAJOR" "v$MAJOR.$MINOR"
