@@ -34,6 +34,7 @@ next release's changelog entry. A CI check enforces this on every PR.
 - Everything should be in `snake_case`.
 - Anything exposed to the user (variables, files, functions) should begin with `tide_`.
 - If the user isn't meant to interact with it from the commandline, prepend an underscore.
+- If the function only exists to be accessed by tide, it should begin with `_tide_internal_`
 
 Examples:
 
@@ -41,6 +42,7 @@ Examples:
 - `set -U tide_right_prompt_items`
 - `_tide_detect_os.fish`
 - `_tide_print_item`
+- `_tide_internal_jj_git.fish`
 
 #### Specific Naming Conventions
 
