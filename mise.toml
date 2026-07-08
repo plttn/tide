@@ -22,6 +22,10 @@ description = 'Run test suite'
 depends = ['littlecheck']
 file = 'scripts/test.fish'
 
+[tasks.test-clean]
+description = 'Remove the cached local test HOME used by `mise run test`'
+file = 'scripts/test_clean.fish'
+
 [tasks.clean]
 description = 'Remove generated test helper'
 run = 'rm -f littlecheck.py'
