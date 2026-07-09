@@ -93,9 +93,11 @@ If you're interested in helping contribute to Tide, please take a look at the [C
 
 ## Acknowledgments
 
+- [ilancosman/tide][] - The original. The work here is built on Ilan's work, and is indebted to him. 
 - [Powerlevel10k][] - Inspired Tide's creation. Because Tide aims to replicate Powerlevel10k's amazing capabilities, small sections of documentation have been borrowed when rewording the language would reduce clarity.
 - [Starship][] - Inspired elements of Tide's documentation and community health files.
 - [Spacefish][] - Inspired some of Tide's items.
+- 
 
 ## Appendix
 
@@ -127,3 +129,4 @@ necessary.
 [starship]: https://github.com/starship/starship
 [using an older version of fish?]: https://github.com/plttn/tide/wiki/Fish-version-compatibility
 [wiki]: https://github.com/plttn/tide/wiki
+[ilancosman/tide]: https://github.com/IlanCosman/tide
