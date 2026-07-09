@@ -17,8 +17,15 @@ fish tests/test_cleanup.fish
 exit \$test_status
 "
 
-if test "$GITHUB_ACTIONS" = true #we can just have it work normally in CI, since it runs in a clean environment
-    fish -c $inner_cmd
+# Always run against an isolated HOME so tests can never write into the real
+# fish config -- even if GITHUB_ACTIONS happens to be set in a local shell
+# (this previously ran the "normal" branch below unguarded and clobbered a
+# real ~/.config/fish/fish_variables).
+if test "$GITHUB_ACTIONS" = true
+    # CI runners are already fresh/ephemeral, so there's nothing worth
+    # caching across runs -- a throwaway dir is enough.
+    set -l test_home (mktemp -d)
+    env HOME=$test_home XDG_CONFIG_HOME=$test_home/.config fish -c $inner_cmd
 else
     # Reuse a persistent HOME across local runs (shared across worktrees) so
     # fisher/clownfish aren't reinstalled over the network every time. `fisher
