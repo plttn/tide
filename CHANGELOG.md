@@ -1,5 +1,13 @@
 # Changelog
 
+## [7.0.17](https://github.com/plttn/tide/compare/v7.0.16...v7.0.17) (2026-07-09)
+
+
+### Bug Fixes
+
+* always isolate test runs from the real fish HOME ([#52](https://github.com/plttn/tide/issues/52)) ([27bcbe4](https://github.com/plttn/tide/commit/27bcbe4e512b5b34b7d43ee0849637a36cf699e3))
+* clean up orphaned _tide_prompt_* uvars on update ([#53](https://github.com/plttn/tide/issues/53)) ([8f026bc](https://github.com/plttn/tide/commit/8f026bca06a1f4057fcfccbad749a4c1f9136beb))
+
 ## [7.0.16](https://github.com/plttn/tide/compare/v7.0.15...v7.0.16) (2026-07-08)
 
 
