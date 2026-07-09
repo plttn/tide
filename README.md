@@ -16,7 +16,7 @@
 
 ### System Requirements
 
-- The **latest** version of [Fish][], currently 4.6.0. <sup><sub>[Using an older version of Fish?][]</sub></sup>
+- The **latest** version of [Fish][], currently 4.8.0. <sup><sub>[Using an older version of Fish?][]</sub></sup>
 - A [Nerd Font][nerd fonts] installed and enabled in your terminal (or your terminal already supports [fallback fonts](#fallback-font-support) with Nerd Font support).
 
 Install with [Fisher][]:
