@@ -34,7 +34,35 @@ function _tide_signal_test --on-signal SIGUSR2
     set -g _tide_signal_confirmed true
     functions -e _tide_signal_test
 end
-command kill -s USR2 $fish_pid 2>/dev/null; or set -g _tide_signal_unavailable true
+command kill -s USR2 $fish_pid 2>/dev/null || set -g _tide_signal_unavailable true
+
+# Renders in the background (or synchronously, if signals are confirmed
+# unavailable) and repaints when ready. $argv[1] is the render function to
+# call for this session (_tide_1_line_prompt or _tide_2_line_prompt).
+function _tide_dispatch_render --inherit-variable prompt_var --inherit-variable prompt_tmpfile --inherit-variable fish_path
+    if test "$_tide_signal_unavailable" = true
+        set -g $prompt_var ($argv[1])
+        return
+    end
+
+    jobs -q && jobs -p | count | read -lx _tide_jobs
+    $fish_path -c "set _tide_pipestatus $_tide_pipestatus
+set _tide_parent_dirs $_tide_parent_dirs
+PATH="(string escape "$PATH")" CMD_DURATION=$CMD_DURATION fish_key_bindings=$fish_key_bindings fish_bind_mode=$fish_bind_mode $argv[1] >$prompt_tmpfile
+command kill -s USR1 $fish_pid 2>/dev/null" &
+    builtin disown
+
+    command kill $_tide_last_pid 2>/dev/null
+    set -g _tide_last_pid $last_pid
+
+    if not set -q _tide_signal_confirmed
+        for _tide_i in (seq 1 10)
+            set -q _tide_signal_confirmed && break
+            sleep 0.01
+        end
+        set -q _tide_signal_confirmed || set -g _tide_signal_unavailable true
+    end
+end
 
 if contains newline $_tide_left_items # two line prompt initialization
     test "$tide_prompt_add_newline_before" = true && set -l add_newline '\n'
@@ -54,27 +82,7 @@ if contains newline $_tide_left_items # two line prompt initialization
     eval "
 function fish_prompt
     _tide_status=\$status _tide_pipestatus=\$pipestatus if not set -e _tide_repaint
-        if test \"\$_tide_signal_unavailable\" = true
-            set -g $prompt_var (_tide_2_line_prompt)
-        else
-            jobs -q && jobs -p | count | read -lx _tide_jobs
-            $fish_path -c \"set _tide_pipestatus \$_tide_pipestatus
-set _tide_parent_dirs \$_tide_parent_dirs
-PATH=\$(string escape \"\$PATH\") CMD_DURATION=\$CMD_DURATION fish_key_bindings=\$fish_key_bindings fish_bind_mode=\$fish_bind_mode _tide_2_line_prompt >$prompt_tmpfile
-command kill -s USR1 $fish_pid 2>/dev/null\" &
-            builtin disown
-
-            command kill \$_tide_last_pid 2>/dev/null
-            set -g _tide_last_pid \$last_pid
-
-            if not set -q _tide_signal_confirmed
-                for _tide_i in (seq 1 10)
-                    set -q _tide_signal_confirmed && break
-                    sleep 0.01
-                end
-                set -q _tide_signal_confirmed || set -g _tide_signal_unavailable true
-            end
-        end
+        _tide_dispatch_render _tide_2_line_prompt
     end
 
 
@@ -105,27 +113,7 @@ else # one line prompt initialization
 function fish_prompt
     set -lx _tide_status \$status
     _tide_pipestatus=\$pipestatus if not set -e _tide_repaint
-        if test \"\$_tide_signal_unavailable\" = true
-            set -g $prompt_var (_tide_1_line_prompt)
-        else
-            jobs -q && jobs -p | count | read -lx _tide_jobs
-            $fish_path -c \"set _tide_pipestatus \$_tide_pipestatus
-set _tide_parent_dirs \$_tide_parent_dirs
-PATH=\$(string escape \"\$PATH\") CMD_DURATION=\$CMD_DURATION fish_key_bindings=\$fish_key_bindings fish_bind_mode=\$fish_bind_mode _tide_1_line_prompt >$prompt_tmpfile
-command kill -s USR1 $fish_pid 2>/dev/null\" &
-            builtin disown
-
-            command kill \$_tide_last_pid 2>/dev/null
-            set -g _tide_last_pid \$last_pid
-
-            if not set -q _tide_signal_confirmed
-                for _tide_i in (seq 1 10)
-                    set -q _tide_signal_confirmed && break
-                    sleep 0.01
-                end
-                set -q _tide_signal_confirmed || set -g _tide_signal_unavailable true
-            end
-        end
+        _tide_dispatch_render _tide_1_line_prompt
     end
 
     if contains -- --final-rendering \$argv
