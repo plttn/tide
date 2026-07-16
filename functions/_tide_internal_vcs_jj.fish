@@ -48,6 +48,12 @@ if(self.contained_in("::trunk() & ~::@"),
         -T $tmpl 2>/dev/null)
     or return 1
 
+    # Descriptions/bookmarks/tags are freeform text (unlike git refnames),
+    # so scrub control/ESC bytes before they ever reach the terminal -- a
+    # crafted commit description could otherwise inject escape sequences.
+    # \t is preserved: it's this template's field separator.
+    set raw_lines (string replace -ra '[\x00-\x08\x0b-\x1f\x7f]' '' -- $raw_lines)
+
     # Colors
     # if bg color is normal, we can use matching jj colors
     if test $tide_jj_bg_color = normal

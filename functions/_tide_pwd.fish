@@ -8,6 +8,10 @@ set -l pwd_icon $tide_pwd_icon' '
 
 eval "function _tide_pwd
     if set -l split_pwd (string replace -r '^$HOME' '~' -- \$PWD | string split /)
+        # Directory names may legally contain control/ESC bytes; scrub them
+        # before they reach the terminal (no \t exception here -- unlike the
+        # jj item, nothing downstream splits on tabs).
+        set split_pwd (string replace -ra '[\\x00-\\x1f\\x7f]' '' -- \$split_pwd)
         test -w . && set -f split_output \"$pwd_icon\$split_pwd[1]\" \$split_pwd[2..] ||
             set -f split_output \"$unwritable_icon\$split_pwd[1]\" \$split_pwd[2..]
         set split_output[-1] \"$color_anchors\$split_output[-1]$reset_to_color_dirs\"
