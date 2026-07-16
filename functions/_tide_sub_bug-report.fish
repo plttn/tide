@@ -9,7 +9,7 @@ function _tide_sub_bug-report
         source && fisher install plttn/tide@v7"
     else if set -q _flag_verbose
         set --long | string match -r "^_?tide.*" | # Get only tide variables
-            string match -r --invert "^_tide_prompt_var.*" # Remove _tide_prompt_var
+            string match -r --invert "^_tide_prompt_" # Remove prompt-render internals (_tide_prompt_<pid>, _tide_prompt_tmpfile)
     else
         $fish_path --version | string match -qr "fish, version (?<fish_version>.*)"
         _tide_check_version Fish fish-shell/fish-shell "(?<v>[\d.]+)" $fish_version || return
