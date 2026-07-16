@@ -1,5 +1,19 @@
 # Changelog
 
+## [7.0.18](https://github.com/plttn/tide/compare/v7.0.17...v7.0.18) (2026-07-16)
+
+
+### Bug Fixes
+
+* **bug-report:** exclude prompt-render internals from verbose output ([#63](https://github.com/plttn/tide/issues/63)) ([004f14b](https://github.com/plttn/tide/commit/004f14b200ca72ae1cb533f1d012d844710b889c))
+* **prompt:** repaint-on-resize, jobs in sync fallback, tmpfile reuse + atomic writes ([#62](https://github.com/plttn/tide/issues/62)) ([d0d455e](https://github.com/plttn/tide/commit/d0d455e0bf04395af0cb00e6e0cf348ebfde99be))
+* **vcs:** scrub control chars from jj/pwd output ([#65](https://github.com/plttn/tide/issues/65)) ([b9a50ea](https://github.com/plttn/tide/commit/b9a50eabc4ce7666ebb2038dd21601998fe5cc55))
+
+
+### Performance Improvements
+
+* **prompt:** replace per-render uvar handoff with tmpfile + signal ([#54](https://github.com/plttn/tide/issues/54)) ([947ad4f](https://github.com/plttn/tide/commit/947ad4fc8b1984a34b991e27162b573d05596d91))
+
 ## [7.0.17](https://github.com/plttn/tide/compare/v7.0.16...v7.0.17) (2026-07-09)
 
 
