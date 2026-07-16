@@ -9,7 +9,7 @@ source (functions --details _tide_pwd)
 
 set -l prompt_var _tide_prompt_$fish_pid
 set -g $prompt_var
-set -l prompt_tmpfile (mktemp)
+set -q _tide_prompt_tmpfile || set -g _tide_prompt_tmpfile (mktemp) # global so `tide reload` reuses it instead of leaking one per reload
 
 set_color normal | read -l color_normal
 status fish-path | read -l fish_path
@@ -19,8 +19,16 @@ if string match -i homebrew/Cellar $fish_path
 end
 
 # _tide_repaint prevents us from creating a second background job
-function _tide_refresh_prompt --on-signal SIGUSR1 --on-variable COLUMNS --inherit-variable prompt_var --inherit-variable prompt_tmpfile
-    set -g $prompt_var (cat $prompt_tmpfile 2>/dev/null)
+function _tide_refresh_prompt --on-signal SIGUSR1 --inherit-variable prompt_var
+    set -g $prompt_var (cat $_tide_prompt_tmpfile 2>/dev/null)
+    set -g _tide_repaint
+    commandline -f repaint
+end
+
+# On resize, repaint with the last completed render but leave $prompt_var
+# alone -- in synchronous-fallback mode the tmpfile is never written, so
+# reading it here would blank the prompt.
+function _tide_repaint_on_resize --on-variable COLUMNS
     set -g _tide_repaint
     commandline -f repaint
 end
@@ -39,20 +47,30 @@ command kill -s USR2 $fish_pid 2>/dev/null || set -g _tide_signal_unavailable tr
 # Renders in the background (or synchronously, if signals are confirmed
 # unavailable) and repaints when ready. $argv[1] is the render function to
 # call for this session (_tide_1_line_prompt or _tide_2_line_prompt).
-function _tide_dispatch_render --inherit-variable prompt_var --inherit-variable prompt_tmpfile --inherit-variable fish_path
+function _tide_dispatch_render --inherit-variable prompt_var --inherit-variable fish_path
+    jobs -q && jobs -p | count | read -lx _tide_jobs
+
     if test "$_tide_signal_unavailable" = true
         set -g $prompt_var ($argv[1])
         return
     end
 
-    jobs -q && jobs -p | count | read -lx _tide_jobs
+    # The job renders into a private scratch file (suffixed with its own
+    # pid) and atomically renames it over the shared tmpfile, so the
+    # SIGUSR1 handler can never read a partial write from a newer job. The
+    # tmpfile path crosses into the job string-escaped and is expanded as a
+    # variable there, never re-parsed as syntax, so any TMPDIR is safe.
     $fish_path -c "set _tide_pipestatus $_tide_pipestatus
 set _tide_parent_dirs $_tide_parent_dirs
-PATH="(string escape "$PATH")" CMD_DURATION=$CMD_DURATION fish_key_bindings=$fish_key_bindings fish_bind_mode=$fish_bind_mode $argv[1] >$prompt_tmpfile
+set _tide_prompt_tmpfile "(string escape -- $_tide_prompt_tmpfile)"
+PATH="(string escape "$PATH")" CMD_DURATION=$CMD_DURATION fish_key_bindings=$fish_key_bindings fish_bind_mode=$fish_bind_mode $argv[1] >\$_tide_prompt_tmpfile.\$fish_pid
+command mv -f \$_tide_prompt_tmpfile.\$fish_pid \$_tide_prompt_tmpfile
 command kill -s USR1 $fish_pid 2>/dev/null" &
     builtin disown
 
-    command kill $_tide_last_pid 2>/dev/null
+    # A job killed mid-render leaves its scratch file behind; its pid is
+    # the scratch suffix, so remove it only when the kill actually landed
+    command kill $_tide_last_pid 2>/dev/null && command rm -f $_tide_prompt_tmpfile.$_tide_last_pid
     set -g _tide_last_pid $last_pid
 
     if not set -q _tide_signal_confirmed
@@ -134,7 +152,6 @@ end"
 
 end
 
-# Inheriting instead of evaling because here load time is more important than runtime
-function _tide_on_fish_exit --on-event fish_exit --inherit-variable prompt_tmpfile
-    rm -f $prompt_tmpfile
+function _tide_on_fish_exit --on-event fish_exit
+    rm -f $_tide_prompt_tmpfile $_tide_prompt_tmpfile.$_tide_last_pid
 end
