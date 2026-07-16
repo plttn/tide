@@ -18,33 +18,33 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest]
     steps:
-      - uses: actions/checkout@v6
-      - uses: fish-shop/install-fish-shell@v2
-      - uses: fish-shop/install-plugin-manager@v2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: fish-shop/install-fish-shell@e83b4f8c7c4d80c3b65ee0eb5d0e3bf4816536ee # v2
+      - uses: fish-shop/install-plugin-manager@3a4a1f1aff085f23d3817468a042acc1e6471f59 # v2
         with:
           plugin-manager: fisher
-      - uses: jdx/mise-action@v4
+      - uses: jdx/mise-action@dad1bfd3df957f44999b559dd69dc1671cb4e9ea # v4
       - run: mise run test
 
   syntax-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: fish-shop/install-fish-shell@v2
-      - uses: fish-shop/syntax-check@v2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: fish-shop/install-fish-shell@e83b4f8c7c4d80c3b65ee0eb5d0e3bf4816536ee # v2
+      - uses: fish-shop/syntax-check@3d500356d24bce50fab4e335245f224918929284 # v2
 
   format-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: fish-shop/install-fish-shell@v2
-      - uses: fish-shop/indent-check@v2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: fish-shop/install-fish-shell@e83b4f8c7c4d80c3b65ee0eb5d0e3bf4816536ee # v2
+      - uses: fish-shop/indent-check@ee3ad08117b99aa5e41e706ace13ffd4f8c22412 # v2
 
   actionlint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: raven-actions/actionlint@v2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2
 
   gitleaks:
     runs-on: ubuntu-latest
@@ -52,10 +52,10 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v3
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -64,6 +64,6 @@ jobs:
     permissions:
       pull-requests: read
     steps:
-      - uses: amannn/action-semantic-pull-request@v6
+      - uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
