@@ -9,7 +9,12 @@ source (functions --details _tide_pwd)
 
 set -l prompt_var _tide_prompt_$fish_pid
 set -g $prompt_var
-set -q _tide_prompt_tmpfile || set -g _tide_prompt_tmpfile (mktemp) # global so `tide reload` reuses it instead of leaking one per reload
+# global so `tide reload` reuses it instead of leaking one per reload; a
+# private 0700 dir (rather than a bare mktemp file) keeps the per-render
+# scratch files -- created via `>` redirection at umask perms -- from ever
+# being exposed at a world-readable path
+set -q _tide_prompt_tmpdir || set -g _tide_prompt_tmpdir (mktemp -d)
+set -g _tide_prompt_tmpfile $_tide_prompt_tmpdir/prompt
 
 set_color normal | read -l color_normal
 status fish-path | read -l fish_path
@@ -68,9 +73,13 @@ command mv -f \$_tide_prompt_tmpfile.\$fish_pid \$_tide_prompt_tmpfile
 command kill -s USR1 $fish_pid 2>/dev/null" &
     builtin disown
 
-    # A job killed mid-render leaves its scratch file behind; its pid is
-    # the scratch suffix, so remove it only when the kill actually landed
-    command kill $_tide_last_pid 2>/dev/null && command rm -f $_tide_prompt_tmpfile.$_tide_last_pid
+    # A completed job has already mv'd its scratch file away, so its
+    # existence means the previous job is still running or died mid-render --
+    # only then is there anything to kill/clean up, and only then do we pay
+    # for the two external forks.
+    test -e $_tide_prompt_tmpfile.$_tide_last_pid &&
+        command kill $_tide_last_pid 2>/dev/null &&
+        command rm -f $_tide_prompt_tmpfile.$_tide_last_pid
     set -g _tide_last_pid $last_pid
 
     if not set -q _tide_signal_confirmed
@@ -153,5 +162,5 @@ end"
 end
 
 function _tide_on_fish_exit --on-event fish_exit
-    rm -f $_tide_prompt_tmpfile $_tide_prompt_tmpfile.$_tide_last_pid
+    set -q _tide_prompt_tmpdir && rm -rf $_tide_prompt_tmpdir
 end

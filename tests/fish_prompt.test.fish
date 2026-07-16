@@ -53,18 +53,20 @@ env PATH="$fake_bin:$PATH" fish -i -c '
 # CHECK: {{.*}}✘ 1{{.*}}JOBS{{.*}}
 # CHECK: {{.*}}✘ 1{{.*}}JOBS{{.*}}
 
-# Tmpfile hygiene: a fake `mktemp` redirects the prompt tmpfile into a
-# watch dir whose path contains a space, proving the path survives the
-# background job's command string unmangled. macOS mktemp ignores TMPDIR,
-# so PATH-shadowing is the only reliable redirection. After a completed
-# render the scratch file must be renamed away (1 file), `tide reload`
-# must reuse the same tmpfile instead of minting new ones (still 1), and
-# exit must remove it (0).
+# Tmpfile hygiene: a fake `mktemp` redirects the prompt tmpdir into a watch
+# dir whose path contains a space, proving the path survives the background
+# job's command string unmangled. macOS mktemp ignores TMPDIR, so
+# PATH-shadowing is the only reliable redirection. The tmpdir itself is
+# created once and reused ($TIDE_TEST_TMPDIR always has exactly 1 entry --
+# the tmpdir -- until exit), so hygiene is checked *inside* it: after a
+# completed render the scratch file must be renamed away (1 file), `tide
+# reload` must reuse the same tmpdir instead of minting new ones (still 1
+# file), and exit must remove the whole tmpdir (0 entries at the watch root).
 set -l watch_root (mktemp -d)
 mkdir -p "$watch_root/tide tmp"
 set -l fake_mktemp_bin (mktemp -d)
 echo '#!/bin/sh
-exec /usr/bin/mktemp "$TIDE_TEST_TMPDIR/tide.XXXXXX"' >$fake_mktemp_bin/mktemp
+exec /usr/bin/mktemp -d "$TIDE_TEST_TMPDIR/tide.XXXXXX"' >$fake_mktemp_bin/mktemp
 chmod +x $fake_mktemp_bin/mktemp
 
 env TIDE_TEST_TMPDIR="$watch_root/tide tmp" PATH="$fake_mktemp_bin:$PATH" fish -i -c '
@@ -75,10 +77,10 @@ env TIDE_TEST_TMPDIR="$watch_root/tide tmp" PATH="$fake_mktemp_bin:$PATH" fish -
         sleep 0.01
     end
     _tide_decolor (fish_prompt)
-    echo files-after-render (command ls "$TIDE_TEST_TMPDIR" | count)
+    echo files-after-render (command ls $TIDE_TEST_TMPDIR/tide.*/ | count)
     tide reload
     tide reload
-    echo files-after-reloads (command ls "$TIDE_TEST_TMPDIR" | count)
+    echo files-after-reloads (command ls $TIDE_TEST_TMPDIR/tide.*/ | count)
 ' </dev/null
 # CHECK: {{.*}}✘ 1{{.*}}
 # CHECK: files-after-render 1
