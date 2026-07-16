@@ -42,6 +42,10 @@ end
 
 function _tide_init_uninstall --on-event _tide_init_uninstall
     set -e VIRTUAL_ENV_DISABLE_PROMPT
-    set -e (set -U --names | string match --entire -r '^_?tide')
-    functions --erase (functions --all | string match --entire -r '^_?tide')
+
+    set -l tide_uvars (set -U --names | string match --entire -r '^_?tide')
+    set -q tide_uvars[1] && set -e $tide_uvars
+
+    set -l tide_functions (functions --all | string match --entire -r '^_?tide')
+    set -q tide_functions[1] && functions --erase $tide_functions
 end
