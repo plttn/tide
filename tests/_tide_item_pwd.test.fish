@@ -141,5 +141,9 @@ _pwd $tmpdir/tmp/noread/$longDir # CHECK: ~/t/n/a/b/c/d/e/f/golf/hotel/india/jul
 chmod 700 $tmpdir/tmp/noread
 command rm -r $tmpdir/tmp/noread
 
+# ---------- Control/ESC bytes in a directory name are scrubbed ----------
+mkdir -p (printf '%s/tmp/evil\033dir/foo' $tmpdir)
+_pwd (printf '%s/tmp/evil\033dir/foo' $tmpdir) # CHECK: ~/tmp/evildir/foo
+
 # ------------------------------------Cleanup------------------------------------
 command rm -r $tmpdir

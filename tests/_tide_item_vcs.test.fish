@@ -119,5 +119,14 @@ _vcs_item # CHECK: (@ abc123 main def456 * ↑1)
 touch .disable-jj-prompt
 _vcs_item # CHECK:
 
+# -------- jj description control-char scrubbing --------
+# Regression test: a crafted commit description could otherwise inject a raw
+# ESC byte straight into the terminal (see _tide_internal_vcs_jj.fish).
+mkdir -p $dir/jj-scrub-repo/.jj
+printf '#!/bin/sh\ncmd="$*"\ncase "$cmd" in\n  *"workspace list"*) printf "default\\n" ;;\n  *"log"*) printf "abc123\\t.\\tbookmark/main\\tdefault\\tdef456\\t*\\tfalse\\tevil\\033[31mdesc\\n" ;;\n  *) exit 0 ;;\nesac\n' >$dir/bin/jj
+cd $dir/jj-scrub-repo
+set -e tide_jj_show_description
+_vcs_item # CHECK: (@ abc123 main def456 * evil[31mdesc ↑1)
+
 # ------ cleanup ------
 command rm -r $dir
