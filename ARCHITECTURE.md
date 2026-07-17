@@ -43,7 +43,6 @@ prompt_connection_andor_frame_color --> prompt_spacing
 
 prompt_spacing --> icons
 
-icons --> transient
+icons --> finish
 
-transient --> finish
 ```
