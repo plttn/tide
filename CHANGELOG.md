@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.0.19](https://github.com/plttn/tide/compare/v7.0.18...v7.0.19) (2026-07-17)
+
+
+### Bug Fixes
+
+* **prompt:** private tmpdir + guarded job kill ([#64](https://github.com/plttn/tide/issues/64)) ([4267f91](https://github.com/plttn/tide/commit/4267f91191873347b5c848a618e98b914b5e84a5))
+
 ## [7.0.18](https://github.com/plttn/tide/compare/v7.0.17...v7.0.18) (2026-07-16)
 
 
