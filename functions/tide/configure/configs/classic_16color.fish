@@ -1,9 +1,9 @@
+tide_actnetwork_bg_color green
+tide_actnetwork_color black
 tide_aws_bg_color black
 tide_aws_color yellow
 tide_bun_bg_color black
 tide_bun_color white
-tide_character_color brgreen
-tide_character_color_failure brred
 tide_cmd_duration_bg_color black
 tide_cmd_duration_color brblack
 tide_context_bg_color black
@@ -37,10 +37,12 @@ tide_git_color_untracked brblue
 tide_git_color_upstream brgreen
 tide_go_bg_color black
 tide_go_color brcyan
+tide_character_color brgreen
+tide_character_color_failure brred
 tide_java_bg_color black
 tide_java_color yellow
-tide_jj_color brgreen
 tide_jj_bg_color black
+tide_jj_color brgreen
 tide_jobs_bg_color black
 tide_jobs_color green
 tide_kubectl_bg_color black
@@ -73,8 +75,8 @@ tide_shlvl_bg_color black
 tide_shlvl_color yellow
 tide_status_bg_color black
 tide_status_bg_color_failure black
-tide_status_color green
 tide_status_color_failure red
+tide_status_color green
 tide_sudo_bg_color black
 tide_sudo_color brblack
 tide_terraform_bg_color black
