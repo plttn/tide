@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.0.20](https://github.com/plttn/tide/compare/v7.0.19...v7.0.20) (2026-07-18)
+
+
+### Bug Fixes
+
+* **prompt:** kill last render job before removing tmpdir on exit ([#71](https://github.com/plttn/tide/issues/71)) ([925c35e](https://github.com/plttn/tide/commit/925c35e54b65e3e644280b6370b21be7fecdbed6))
+
 ## [7.0.19](https://github.com/plttn/tide/compare/v7.0.18...v7.0.19) (2026-07-17)
 
 
