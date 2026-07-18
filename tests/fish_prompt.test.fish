@@ -89,4 +89,29 @@ echo files-after-exit (command ls "$watch_root/tide tmp" | count)
 # CHECK: files-after-exit 0
 
 command rm -r $fake_bin $fake_mktemp_bin $watch_root
+
+# fish_exit must not delete the tmpdir out from under the last dispatched
+# render job while it's still alive -- it should kill $_tide_last_pid and
+# confirm it's dead first. Otherwise a slow-starting job (e.g. one from a
+# nested shell immediately Ctrl-D'd right after launch) can still be
+# mid-startup when its `>` redirect target disappears, printing a spurious
+# "path does not exist" warning. Simulate that slow job directly: a real
+# fish process which, unless killed first, would write into the tmpdir well
+# after fish_exit has already removed it.
+set -l stderr_log (mktemp)
+fish -i -c '
+    fish_prompt >/dev/null
+    for i in (seq 1 50)
+        set -q _tide_repaint && break
+        sleep 0.01
+    end
+    status fish-path | read -l fish_path
+    $fish_path -c "sleep 0.3; echo late-write >$_tide_prompt_tmpfile.fake" &
+    set -g _tide_last_pid $last_pid
+' </dev/null 2>$stderr_log
+sleep 0.5
+echo stderr-lines (count <$stderr_log)
+# CHECK: stderr-lines 0
+command rm -f $stderr_log
+
 set -e tide_left_prompt_items tide_right_prompt_items tide_prompt_add_newline_before tide_left_prompt_frame_enabled tide_right_prompt_frame_enabled tide_prompt_min_cols tide_status_icon tide_status_icon_failure tide_jobs_icon tide_jobs_number_threshold
