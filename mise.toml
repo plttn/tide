@@ -15,7 +15,9 @@ fish -c 'if test -e ~/.config/fish/functions/tide.fish; else; fisher install . >
 
 [tasks.littlecheck]
 description = 'Download littlecheck test runner'
-run = 'curl -sL https://raw.githubusercontent.com/ridiculousfish/littlecheck/HEAD/littlecheck/littlecheck.py -o littlecheck.py'
+# littlecheck has no tags/releases to pin to, so we pin a commit SHA instead of
+# tracking HEAD, so upstream changes can't silently break our tests/CI.
+run = 'curl -sL https://raw.githubusercontent.com/ridiculousfish/littlecheck/c44c157d3666b9a447e20977eec6eb4bd2a0c304/littlecheck/littlecheck.py -o littlecheck.py'
 
 [tasks.test]
 description = 'Run test suite'
