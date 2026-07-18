@@ -162,5 +162,17 @@ end"
 end
 
 function _tide_on_fish_exit --on-event fish_exit
+    # The last dispatched render job is disowned, so nothing else waits for
+    # it -- kill it and confirm it's dead before removing the tmpdir it
+    # writes into, or a job that's still starting up (e.g. a nested shell
+    # exited right after launch) can fail its redirect into a dir we just
+    # deleted and print a spurious warning.
+    if set -q _tide_last_pid
+        command kill $_tide_last_pid 2>/dev/null
+        for _tide_i in (seq 1 10)
+            command kill -0 $_tide_last_pid 2>/dev/null || break
+            sleep 0.01
+        end
+    end
     set -q _tide_prompt_tmpdir && rm -rf $_tide_prompt_tmpdir
 end
