@@ -128,5 +128,33 @@ cd $dir/jj-scrub-repo
 set -e tide_jj_show_description
 _vcs_item # CHECK: (@ abc123 main def456 * evil[31mdesc ↑1)
 
+# -------- jj bookmark depth: position-based fast path --------
+# Regression test: an ahead commit with no local bookmark previously produced
+# no template output at all, so both the total ahead count and (before this
+# fix) a position-based depth would silently undercount. Main log response
+# here is @ (no bookmarks) + one bookmarked ancestor ("feature") + one
+# unbookmarked ancestor -- 3 ahead commits total. The "::@ ~" case exits
+# nonzero (no output) so that if the fast path were wrongly skipped in favor
+# of the per-bookmark fallback, the resulting depth would visibly be 0
+# instead of the correct 1, failing the CHECK below.
+mkdir -p $dir/jj-fastpath-repo/.jj
+printf '#!/bin/sh\ncmd="$*"\ncase "$cmd" in\n  *"workspace list"*) printf "default\\n" ;;\n  *"::@ ~"*) exit 1 ;;\n  *"log"*) printf "xyz999\\t.\\t.\\tdefault\\tdef999\\t*\\tfalse\\tdesc\\nanc123\\tfeature\\n\\n" ;;\n  *) exit 0 ;;\nesac\n' >$dir/bin/jj
+cd $dir/jj-fastpath-repo
+_vcs_item # CHECK: (@ xyz999 def999 * desc feature↑1 ↑3)
+
+# -------- jj bookmark depth: merge-detection fallback --------
+# Same 3 ahead commits, but the main log response now also emits a bare "M"
+# line (this fires when a commit in the ahead-path has more than one
+# parent) -- so depth must come from the old per-bookmark `jj log` call
+# instead of list position. The canned fallback response (3 dots -> depth 3)
+# is deliberately different from the fast-path's depth (1), so the rendered
+# value proves which code path actually ran. The total ahead count (↑3)
+# must be unchanged from the fast-path test, confirming the "M" line itself
+# isn't miscounted as an ahead commit.
+mkdir -p $dir/jj-merge-repo/.jj
+printf '#!/bin/sh\ncmd="$*"\ncase "$cmd" in\n  *"workspace list"*) printf "default\\n" ;;\n  *"::@ ~"*) printf ".\\n.\\n.\\n" ;;\n  *"log"*) printf "M\\nxyz999\\t.\\t.\\tdefault\\tdef999\\t*\\tfalse\\tdesc\\nanc123\\tfeature\\n\\n" ;;\n  *) exit 0 ;;\nesac\n' >$dir/bin/jj
+cd $dir/jj-merge-repo
+_vcs_item # CHECK: (@ xyz999 def999 * desc feature↑3 ↑3)
+
 # ------ cleanup ------
 command rm -r $dir

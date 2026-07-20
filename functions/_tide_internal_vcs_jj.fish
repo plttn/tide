@@ -1,10 +1,22 @@
 # full credits to https://github.com/nertzy/fish_jj_prompt
 # for a lot of the logic here, modified for Tide
 function _tide_internal_vcs_jj
+    # A bare "M\n" line is emitted immediately before a commit's own content
+    # line whenever that commit has more than one parent. It only fires for
+    # @ and ahead-of-trunk commits (never the trunk() boundary itself, since
+    # merges are common in a long-lived trunk's own history and are
+    # irrelevant to the ahead-path's shape) -- it lets the loop below detect,
+    # for free from this single jj invocation, whether every bookmarked
+    # ancestor's position in $raw_lines can be trusted as its distance from
+    # @. That trust breaks the moment the ahead-path branches: jj's log
+    # order fully drains one parent line before the other, so a bookmark on
+    # the second-visited branch gets a position inflated by the first
+    # branch's length.
     set -l tmpl '
 if(self.contained_in("::trunk() & ~::@"),
     "B\n",
     if(self.contained_in("@"),
+        if(parents.len() > 1, "M\n") ++
         change_id.shortest() ++
             if(divergent, "/" ++ change_offset) ++
         "\t" ++
@@ -32,11 +44,13 @@ if(self.contained_in("::trunk() & ~::@"),
     ,
         if(self.contained_in("trunk()"),
             ".\n",
+            if(parents.len() > 1, "M\n") ++
             if(local_bookmarks,
                 change_id.shortest() ++ "\t" ++ separate(",",
                     local_bookmarks.join(","),
                     if(tags, tags.join(",")),
                 ) ++ "\n",
+                "\n",
             )
         )
     )
@@ -53,6 +67,15 @@ if(self.contained_in("::trunk() & ~::@"),
     # crafted commit description could otherwise inject escape sequences.
     # \t is preserved: it's this template's field separator.
     set raw_lines (string replace -ra '[\x00-\x08\x0b-\x1f\x7f]' '' -- $raw_lines)
+
+    # If the ahead-path never branches, each bookmarked ancestor's position
+    # in $raw_lines (tracked below via $ahead) equals its distance from @,
+    # so we can skip the per-bookmark `jj log` call entirely. A single "M"
+    # line anywhere means it doesn't, and every bookmark falls back to the
+    # old per-cid query for correctness.
+    set -l has_merge 0
+    contains -- M $raw_lines
+    and set has_merge 1
 
     # Colors
     # if bg color is normal, we can use matching jj colors
@@ -91,6 +114,9 @@ if(self.contained_in("::trunk() & ~::@"),
     for line in $raw_lines
         if test "$line" = B
             set behind (math $behind + 1)
+            continue
+        end
+        if test "$line" = M
             continue
         end
 
@@ -174,9 +200,14 @@ if(self.contained_in("::trunk() & ~::@"),
         else if test $nparts -eq 2
             # Ancestor with bookmarks: change_id, bookmarks
             set -l cid $parts[1]
-            set -l depth_commits (jj log --no-pager --no-graph --ignore-working-copy --color=never \
-                -r "$cid::@ ~ $cid" -T '".\n"' 2>/dev/null)
-            set -l depth (count $depth_commits)
+            set -l depth
+            if test $has_merge -eq 1
+                set -l depth_commits (jj log --no-pager --no-graph --ignore-working-copy --color=never \
+                    -r "$cid::@ ~ $cid" -T '".\n"' 2>/dev/null)
+                set depth (count $depth_commits)
+            else
+                set depth (math $ahead - 1)
+            end
             for bookmark in (string split ',' -- $parts[2])
                 set bookmark (string trim -- $bookmark)
                 if test -n "$bookmark"
@@ -185,7 +216,7 @@ if(self.contained_in("::trunk() & ~::@"),
                 end
             end
         end
-        # "." lines (nparts=1, not "B") just count toward ahead
+        # "." lines and blank lines (nparts=1, not "B"/"M") just count toward ahead
     end
 
     # Assemble prompt
