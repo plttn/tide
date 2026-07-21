@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.0.21](https://github.com/plttn/tide/compare/v7.0.20...v7.0.21) (2026-07-21)
+
+
+### Bug Fixes
+
+* **vcs:** avoid per-bookmark jj log calls and fix ahead-count undercount ([#73](https://github.com/plttn/tide/issues/73)) ([185aed1](https://github.com/plttn/tide/commit/185aed106edc13f9425381c17d244a78b33f9271))
+
 ## [7.0.20](https://github.com/plttn/tide/compare/v7.0.19...v7.0.20) (2026-07-18)
 
 
