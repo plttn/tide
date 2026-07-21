@@ -108,7 +108,8 @@ if contains newline $_tide_left_items # two line prompt initialization
 
     eval "
 function fish_prompt
-    _tide_status=\$status _tide_pipestatus=\$pipestatus if not set -e _tide_repaint
+    set -lx _tide_status \$status
+    _tide_pipestatus=\$pipestatus if not set -e _tide_repaint
         _tide_dispatch_render _tide_2_line_prompt
     end
 
@@ -122,7 +123,13 @@ function fish_prompt
 
         echo \"\$$prompt_var[1][3]$top_right_frame\"
     end
-    echo -n \e\[0J\"$bot_left_frame\$$prompt_var[1][2]$color_normal \"
+    echo -n \e\[0J
+    if contains -- --final-rendering \$argv
+        add_prefix= _tide_item_character
+        echo -n '$color_normal '
+    else
+        echo -n \"$bot_left_frame\$$prompt_var[1][2]$color_normal \"
+    end
 end
 
 function fish_right_prompt
