@@ -110,6 +110,7 @@ if(self.contained_in("::trunk() & ~::@"),
     set -l behind 0
     set -l ahead 0
     set -l display_bookmarks
+    set -l ancestor_depth_forks 0
 
     for line in $raw_lines
         if test "$line" = B
@@ -200,11 +201,18 @@ if(self.contained_in("::trunk() & ~::@"),
         else if test $nparts -eq 2
             # Ancestor with bookmarks: change_id, bookmarks
             set -l cid $parts[1]
-            set -l depth
+            set -l depth ""
             if test $has_merge -eq 1
-                set -l depth_commits (jj log --no-pager --no-graph --ignore-working-copy --color=never \
-                    -r "$cid::@ ~ $cid" -T '".\n"' 2>/dev/null)
-                set depth (count $depth_commits)
+                # Depth requires one extra `jj log` fork per ancestor bookmark;
+                # cap it so a deep stack of bookmarks on a merge-containing
+                # ahead-path can't fork unboundedly -- bookmarks beyond the
+                # cap still show, just without the `↑depth` suffix.
+                if test $ancestor_depth_forks -lt 3
+                    set ancestor_depth_forks (math $ancestor_depth_forks + 1)
+                    set -l depth_commits (jj log --no-pager --no-graph --ignore-working-copy --color=never \
+                        -r "$cid::@ ~ $cid" -T '".\n"' 2>/dev/null)
+                    set depth (count $depth_commits)
+                end
             else
                 set depth (math $ahead - 1)
             end
@@ -212,7 +220,11 @@ if(self.contained_in("::trunk() & ~::@"),
                 set bookmark (string trim -- $bookmark)
                 if test -n "$bookmark"
                     set -l nobold (printf '\e[22m')
-                    set -a display_bookmarks "$magenta$bookmark$nobold$magenta↑$depth$reset$bold"
+                    if test -n "$depth"
+                        set -a display_bookmarks "$magenta$bookmark$nobold$magenta↑$depth$reset$bold"
+                    else
+                        set -a display_bookmarks "$magenta$bookmark$reset$bold"
+                    end
                 end
             end
         end
