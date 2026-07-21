@@ -1,5 +1,15 @@
 # Changelog
 
+## [7.0.22](https://github.com/plttn/tide/compare/v7.0.21...v7.0.22) (2026-07-21)
+
+
+### Bug Fixes
+
+* **icons:** Update sudo icon ([#79](https://github.com/plttn/tide/issues/79)) ([fe7ec1e](https://github.com/plttn/tide/commit/fe7ec1eceb8aa5788584d3bcb162efd68cdcbe4d))
+* **sudo:** Exclude root from displaying sudo indicator ([#78](https://github.com/plttn/tide/issues/78)) ([0805057](https://github.com/plttn/tide/commit/0805057440d419a1b78caf9b2d7d4e7f7b02e7ab))
+* **sudo:** Update colors for sudo indicator ([#80](https://github.com/plttn/tide/issues/80)) ([f3162c0](https://github.com/plttn/tide/commit/f3162c0a225018f2e7e57c251e3c1fee095e2aba))
+* **vcs:** cap per-bookmark jj log forks in jj merge-ahead fallback path ([#76](https://github.com/plttn/tide/issues/76)) ([3fcff7b](https://github.com/plttn/tide/commit/3fcff7be6de7693def125ebd65cdb16f09a81aa6))
+
 ## [7.0.21](https://github.com/plttn/tide/compare/v7.0.20...v7.0.21) (2026-07-21)
 
 
