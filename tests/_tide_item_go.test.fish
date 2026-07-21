@@ -16,4 +16,11 @@ _go # CHECK:
 touch go.mod
 _go # CHECK:  1.16.5
 
+rm go.mod
+
+touch go.work
+_go # CHECK:  1.16.5
+
+rm go.work
+
 command rm -r $goDir
