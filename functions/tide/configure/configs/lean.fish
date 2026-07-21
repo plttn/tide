@@ -102,7 +102,7 @@ tide_status_bg_color_failure normal
 tide_status_color $_tide_color_dark_green
 tide_status_color_failure D70000
 tide_sudo_bg_color normal
-tide_sudo_color 87875F
+tide_sudo_color F1C40F
 tide_terraform_bg_color normal
 tide_terraform_color 844FBA
 tide_time_bg_color normal
