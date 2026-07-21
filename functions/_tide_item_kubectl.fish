@@ -8,7 +8,7 @@ function _tide_item_kubectl
         read -lz content <$kubeconfig
         string match -qr '(?m)^current-context:\s*[\'"]?(?<ctx>[^\'"\n]+?)[\'"]?\s*$' -- $content
         if test -n "$ctx"
-            string match -qr '(?s)- context:\n(?<block>.*?)\n  name: '(string escape --style=regex -- $ctx)'(?:\n|$)' -- $content
+            string match -qr '(?s)- context:\n(?<block>(?:(?!\n- context:).)*?)\n  name: '(string escape --style=regex -- $ctx)'(?:\n|$)' -- $content
             test -n "$block" && string match -qr 'namespace: *(?<namespace>\S+)' -- $block
         end
     end

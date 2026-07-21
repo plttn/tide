@@ -50,6 +50,21 @@ contexts:
 
 _kubectl # CHECK: ⎈ prod/production
 
+# regression: an earlier context's own namespace must not leak into a later
+# context's match
+echo 'current-context: prod
+contexts:
+- context:
+    cluster: dev-cluster
+    namespace: dev-ns
+  name: dev
+- context:
+    cluster: prod-cluster
+    namespace: production
+  name: prod' >$tmpdir/.kube/config
+
+_kubectl # CHECK: ⎈ prod/production
+
 # -------- $KUBECONFIG with multiple paths: falls back to the CLI --------
 set -lx KUBECONFIG "$tmpdir/.kube/config:$tmpdir/.kube/other"
 mock kubectl "config view --minify --output" "echo merged-context/merged-ns"
