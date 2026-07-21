@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.0.23](https://github.com/plttn/tide/compare/v7.0.22...v7.0.23) (2026-07-21)
+
+
+### Bug Fixes
+
+* **prompt:** collapse two-line transient prompt to just the character ([#81](https://github.com/plttn/tide/issues/81)) ([e8fd3fe](https://github.com/plttn/tide/commit/e8fd3fefbe6f0a9e7331b66df97df8f8bcb3dc92))
+
 ## [7.0.22](https://github.com/plttn/tide/compare/v7.0.21...v7.0.22) (2026-07-21)
 
 
