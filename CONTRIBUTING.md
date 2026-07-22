@@ -17,7 +17,7 @@ If you have any questions that aren't addressed in this document, please don't h
   - For anything more complex use `if`, `else`, and `else if`
 - Piping > command substitution (only when convenient, i.e no extra commands)
 
-### Pull Request Titles
+### Pull Requests
 
 PR titles must follow [Conventional Commits][]: `<type>[(scope)][!]: <description>`,
 e.g. `fix: correct jj branch color` or `feat(vcs)!: unify git/jj into a single item`.
@@ -28,6 +28,12 @@ e.g. `fix: correct jj branch color` or `feat(vcs)!: unify git/jj into a single i
 This isn't just style: since PRs are squash-merged, the title becomes the
 commit message on `main`, which [release-please][] reads to generate the
 next release's changelog entry. A CI check enforces this on every PR.
+
+Each pull request should only impact a single `<type>(scope)`. In other words,
+`fix: correct branch color` or `feat(foobar): introduce foobar item` are
+acceptable, but `perf(items): improve both docker and kubectl` is not.
+
+This is to ensure that the changelog generates cleanly off of PR titles.
 
 ### Naming Conventions
 
