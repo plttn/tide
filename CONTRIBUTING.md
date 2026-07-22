@@ -57,15 +57,20 @@ Examples:
 
 ## Mise Tasks
 
-Pretty self explanatory.
+Primary development tasks will be `fmt`, `lint`, and `test`.
 
-- `mise run all`
-- `mise run fmt`
-- `mise run lint`
-- `mise run install`
-- `mise run test`
-
-In general, just run `mise run all` to do everything.
+- `install`
+  - Installs the current state of the directory using fisher to your real fish
+    environment. This probably isn't what you intend to do.
+- `fmt`
+  - Formats files to meet fish standards. This is a must pass for PRs.
+- `lint`
+  - Validates that all files are valid fish files. This is also a must pass for PRs.
+- `test`
+  - Creates a local environment for testing and performs the tests. This will not
+    impact your real environment.
+- `test-clean`
+  - Cleans up the test homedir used by `test`.
 
 ### Specifics
 
