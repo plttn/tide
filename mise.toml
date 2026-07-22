@@ -31,7 +31,3 @@ file = 'scripts/test_clean.fish'
 [tasks.clean]
 description = 'Remove generated test helper'
 run = 'rm -f littlecheck.py'
-
-[tasks.all]
-description = 'Format, lint, install, and test'
-depends = ['fmt', 'lint', 'install', 'test']
