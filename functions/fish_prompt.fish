@@ -181,5 +181,5 @@ function _tide_on_fish_exit --on-event fish_exit
             sleep 0.01
         end
     end
-    set -q _tide_prompt_tmpdir && rm -rf $_tide_prompt_tmpdir
+    set -q _tide_prompt_tmpdir && command rm -rf $_tide_prompt_tmpdir
 end
