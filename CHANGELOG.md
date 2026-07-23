@@ -1,5 +1,25 @@
 # Changelog
 
+## [7.1.0](https://github.com/plttn/tide/compare/v7.0.23...v7.1.0) (2026-07-23)
+
+
+### Features
+
+* **go:** Support go workspaces for go version detection ([#83](https://github.com/plttn/tide/issues/83)) ([17926d1](https://github.com/plttn/tide/commit/17926d1878572af5d35a1fb5650d278a028fed03))
+
+
+### Bug Fixes
+
+* **prompt:** drop superseded background renders via generation stamp ([9703caf](https://github.com/plttn/tide/commit/9703caf62fc5975f59d8ec7f89f8a9508e4e4525))
+* **prompt:** drop superseded background renders via generation stamp ([5bb38cc](https://github.com/plttn/tide/commit/5bb38cc0b9bdf26628d04a84687fcbdf24b6f829))
+* **prompt:** use command prefix for `rm` ([#86](https://github.com/plttn/tide/issues/86)) ([358ac69](https://github.com/plttn/tide/commit/358ac6951eceec94e80efb7e195e1ed64a61da1b))
+
+
+### Performance Improvements
+
+* **docker:** read current context from ~/.docker/config.json instead of forking CLI ([afd3128](https://github.com/plttn/tide/commit/afd3128e5bbcf861763e95270dd8b1ae20f31100))
+* **kubectl:** read current context from ~/.kube/config instead of forking CLI ([afd3128](https://github.com/plttn/tide/commit/afd3128e5bbcf861763e95270dd8b1ae20f31100))
+
 ## [7.0.23](https://github.com/plttn/tide/compare/v7.0.22...v7.0.23) (2026-07-21)
 
 
