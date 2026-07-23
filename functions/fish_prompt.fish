@@ -16,6 +16,13 @@ set -g $prompt_var
 set -q _tide_prompt_tmpdir || set -g _tide_prompt_tmpdir (mktemp -d)
 set -g _tide_prompt_tmpfile $_tide_prompt_tmpdir/prompt
 
+# Bumped on every dispatch and stamped into each job's output, so a job that
+# finishes after a newer one has already been dispatched -- e.g. a slow
+# in-repo render outliving a fast render for the directory `cd`ed into next
+# -- can be recognized as superseded and dropped instead of overwriting
+# fresher content.
+set -q _tide_render_gen || set -g _tide_render_gen 0
+
 set_color normal | read -l color_normal
 status fish-path | read -l fish_path
 
@@ -25,7 +32,15 @@ end
 
 # _tide_repaint prevents us from creating a second background job
 function _tide_refresh_prompt --on-signal SIGUSR1 --inherit-variable prompt_var
-    set -g $prompt_var (cat $_tide_prompt_tmpfile 2>/dev/null)
+    set -l rendered (cat $_tide_prompt_tmpfile 2>/dev/null)
+    # First line is the generation this job was dispatched at (see
+    # _tide_dispatch_render) -- a mismatch means a newer job has since been
+    # dispatched, so this result is stale and superseded; drop it rather
+    # than clobbering $prompt_var with old content. No repaint here is
+    # correct: the newer job has either already applied its own result or
+    # will signal on its own once it finishes.
+    test "$rendered[1]" = "$_tide_render_gen" || return
+    set -g $prompt_var $rendered[2..]
     set -g _tide_repaint
     commandline -f repaint
 end
@@ -60,15 +75,22 @@ function _tide_dispatch_render --inherit-variable prompt_var --inherit-variable 
         return
     end
 
+    set -g _tide_render_gen (math $_tide_render_gen + 1)
+
     # The job renders into a private scratch file (suffixed with its own
     # pid) and atomically renames it over the shared tmpfile, so the
-    # SIGUSR1 handler can never read a partial write from a newer job. The
-    # tmpfile path crosses into the job string-escaped and is expanded as a
-    # variable there, never re-parsed as syntax, so any TMPDIR is safe.
+    # SIGUSR1 handler can never read a partial write from a newer job. Its
+    # first line is stamped with the generation dispatched here (baked in
+    # as a literal below, not read back from the variable, since the job
+    # is a separate process) so _tide_refresh_prompt can recognize and
+    # drop a result superseded by a since-dispatched job. The tmpfile path
+    # crosses into the job string-escaped and is expanded as a variable
+    # there, never re-parsed as syntax, so any TMPDIR is safe.
     $fish_path -c "set _tide_pipestatus $_tide_pipestatus
 set _tide_parent_dirs $_tide_parent_dirs
 set _tide_prompt_tmpfile "(string escape -- $_tide_prompt_tmpfile)"
-PATH="(string escape "$PATH")" CMD_DURATION=$CMD_DURATION fish_key_bindings=$fish_key_bindings fish_bind_mode=$fish_bind_mode $argv[1] >\$_tide_prompt_tmpfile.\$fish_pid
+echo $_tide_render_gen >\$_tide_prompt_tmpfile.\$fish_pid
+PATH="(string escape "$PATH")" CMD_DURATION=$CMD_DURATION fish_key_bindings=$fish_key_bindings fish_bind_mode=$fish_bind_mode $argv[1] >>\$_tide_prompt_tmpfile.\$fish_pid
 command mv -f \$_tide_prompt_tmpfile.\$fish_pid \$_tide_prompt_tmpfile
 command kill -s USR1 $fish_pid 2>/dev/null" &
     builtin disown
