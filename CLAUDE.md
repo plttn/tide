@@ -82,7 +82,7 @@ The git backend minimizes subprocess spawns (currently 3 git invocations) since 
 
 - Style: prefer `test` over `[ ]`; prefer `&&`/`||` over `and`/`or` for simple conditionals, `if`/`else`/`else if` for anything more complex; prefer piping over command substitution when it doesn't require extra commands.
 - Naming: everything `snake_case`. User-facing names (variables, functions, files) are prefixed `tide_`; internal-only names are prefixed `_tide_`. Items live in `_tide_item_<name>.fish`; subcommands in `_tide_sub_<name>.fish`.
-- PR titles must follow [Conventional Commits][conventional-commits] (`<type>[(scope)][!]: <description>`) — PRs are squash-merged, so the PR title becomes the commit message on `main`, and [release-please][release-please] reads it to generate the changelog. This is CI-enforced.
+- PRs merge via a real merge commit (not squash), so every commit — not the PR title — must follow [Conventional Commits][conventional-commits] (`<type>[(scope)][!]: <description>`); [release-please][release-please] reads commits directly off `main` to generate the changelog. This is CI-enforced per-commit.
 - Releases are fully automated by release-please; don't hand-edit `functions/tide.fish`'s version string or the floating `vN`/`vN.M` tags.
 
 [clownfish]: https://github.com/IlanCosman/clownfish
