@@ -19,26 +19,21 @@ If you have any questions that aren't addressed in this document, please don't h
 
 ### Pull Requests
 
-PRs are merged into `main` with a real merge commit, not squashed. Because of
-that, every commit in the PR — not just the title — must follow
-[Conventional Commits][]: `<type>[(scope)][!]: <description>`, e.g.
-`fix: correct jj branch color` or `feat(vcs)!: unify git/jj into a single
-item`. [release-please][] reads these commits directly off `main` to
-generate the next release's changelog entry. A CI check (`commit-lint`)
-enforces this on every commit in the PR.
+PR titles must follow [Conventional Commits][]: `<type>[(scope)][!]: <description>`,
+e.g. `fix: correct jj branch color` or `feat(vcs)!: unify git/jj into a single item`.
 
 - Allowed types: `feat`, `fix`, `build`, `chore`, `ci`, `docs`, `style`, `refactor`, `perf`, `test`, `revert`.
 - Add `!` before the `:` (or a `BREAKING CHANGE:` footer) for breaking changes.
 
-The PR title itself has no format requirement — write it as plain,
-descriptive text for anyone skimming the PR list.
+This isn't just style: since PRs are squash-merged, the title becomes the
+commit message on `main`, which [release-please][] reads to generate the
+next release's changelog entry. A CI check enforces this on every PR.
 
 Each pull request should only impact a single `<type>(scope)`. In other words,
-a PR with only `fix: correct branch color` commits or only
-`feat(foobar): ...` commits is acceptable, but mixing `perf(docker): ...` and
-`perf(kubectl): ...` commits in the same PR is not.
+`fix: correct branch color` or `feat(foobar): introduce foobar item` are
+acceptable, but `perf(items): improve both docker and kubectl` is not.
 
-This is to keep the changelog generating cleanly off `main`'s commit history.
+This is to ensure that the changelog generates cleanly off of PR titles.
 
 ### Naming Conventions
 
@@ -116,11 +111,8 @@ All links should be in reference style, with references at the bottom of the doc
 
 Releases are automated by [release-please][]. It watches `main` and keeps an
 open "release PR" containing the next version bump and a generated
-`CHANGELOG.md` entry, derived from Conventional Commit messages on `main`
-since the last release. Merge commits themselves carry GitHub's default
-message ("Merge pull request #N from branch"), which never matches the
-Conventional Commits pattern, so release-please skips them and reads only
-the PR's individual commits.
+`CHANGELOG.md` entry, derived from Conventional Commit PR titles merged
+since the last release.
 
 - [ ] Before merging the release PR, hand-edit its `CHANGELOG.md` diff to
       clean up the generated bullets into prose, and add any narrative

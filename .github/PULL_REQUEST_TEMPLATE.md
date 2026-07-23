@@ -1,7 +1,6 @@
 <!-- Provide a general summary of your changes in the Title above. -->
-<!-- The title has no required format, but every commit in the PR must be -->
-<!-- a Conventional Commit (e.g. "fix: ..." or "feat: ...") — see -->
-<!-- CONTRIBUTING.md#pull-requests. release-please reads commits directly. -->
+<!-- The title must be a Conventional Commit (e.g. "fix: ..." or "feat: ...") -->
+<!-- see CONTRIBUTING.md#pull-request-titles — it becomes the changelog entry. -->
 
 #### Description
 
