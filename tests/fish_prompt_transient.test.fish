@@ -36,6 +36,17 @@ fish -i -c '
     echo transient-right:
     _tide_decolor (fish_right_prompt --final-rendering)
     echo transient-right-end
+
+    # The transient render prints the character and nothing else, so it never
+    # reads the rendered prompt -- dispatching a background job for it would
+    # be a fork spent on output that gets thrown away, and one more job in
+    # flight while the command runs. Clear the repaint flag first, so a skip
+    # can only come from the --final-rendering check.
+    set -e _tide_repaint
+    set -l pid_before $_tide_last_pid
+    fish_prompt --final-rendering >/dev/null
+    test "$_tide_last_pid" = "$pid_before" &&
+        echo transient-dispatched-no || echo transient-dispatched-yes
 ' </dev/null 2>$stderr_log
 # CHECK: normal:
 # CHECK: {{.*}}╭─{{.*}}─╮{{.*}}
@@ -44,6 +55,7 @@ fish -i -c '
 # CHECK: {{\x1b\[0J}}❯
 # CHECK: transient-right:
 # CHECK: transient-right-end
+# CHECK: transient-dispatched-no
 
 echo stderr-lines (count <$stderr_log)
 # CHECK: stderr-lines 0
