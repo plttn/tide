@@ -114,4 +114,43 @@ echo stderr-lines (count <$stderr_log)
 # CHECK: stderr-lines 0
 command rm -f $stderr_log
 
+# A superseded job that finishes late must not be able to hide or destroy the
+# newest job's result. Every job publishes under its own pid, so this can be
+# staged directly: write what the current job published, then write what a
+# slower job dispatched *earlier* publishes afterwards, then deliver the
+# signal. The late write lands somewhere the handler never reads, so the
+# order of the two writes cannot matter -- which is the whole point, since
+# with one shared file the later write won.
+fish -i -c '
+    false
+    fish_prompt >/dev/null
+    for i in (seq 1 50)
+        set -q _tide_repaint && break
+        sleep 0.01
+    end
+    echo fresh-content >$_tide_prompt_tmpfile.$_tide_last_pid
+    echo stale-junk >$_tide_prompt_tmpfile.999999
+    command kill -s USR1 $fish_pid
+    sleep 0.1
+    echo applied: (_tide_decolor (fish_prompt))
+' </dev/null
+# CHECK: applied: fresh-content
+
+# Superseding a render has to stay silent. Each job cleans up after the one
+# before it, and a job still rendering is killed first -- take its scratch
+# file away without killing it and its rename has nothing to rename, so it
+# complains to the terminal from a background process the prompt no longer
+# controls. Dispatching renders back to back makes jobs overlap.
+set -l stderr_log (mktemp)
+fish -i -c '
+    for i in (seq 20)
+        set -e _tide_repaint
+        fish_prompt >/dev/null
+    end
+    sleep 0.5
+' </dev/null 2>$stderr_log
+echo overlap-stderr-lines (count <$stderr_log)
+# CHECK: overlap-stderr-lines 0
+command rm -f $stderr_log
+
 set -e tide_left_prompt_items tide_right_prompt_items tide_prompt_add_newline_before tide_left_prompt_frame_enabled tide_right_prompt_frame_enabled tide_prompt_min_cols tide_status_icon tide_status_icon_failure tide_jobs_icon tide_jobs_number_threshold

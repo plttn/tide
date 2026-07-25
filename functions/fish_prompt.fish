@@ -16,13 +16,6 @@ set -g $prompt_var
 set -q _tide_prompt_tmpdir || set -g _tide_prompt_tmpdir (mktemp -d)
 set -g _tide_prompt_tmpfile $_tide_prompt_tmpdir/prompt
 
-# Bumped on every dispatch and stamped into each job's output, so a job that
-# finishes after a newer one has already been dispatched -- e.g. a slow
-# in-repo render outliving a fast render for the directory `cd`ed into next
-# -- can be recognized as superseded and dropped instead of overwriting
-# fresher content.
-set -q _tide_render_gen || set -g _tide_render_gen 0
-
 set_color normal | read -l color_normal
 status fish-path | read -l fish_path
 
@@ -32,15 +25,16 @@ end
 
 # _tide_repaint prevents us from creating a second background job
 function _tide_refresh_prompt --on-signal SIGUSR1 --inherit-variable prompt_var
-    set -l rendered (cat $_tide_prompt_tmpfile 2>/dev/null)
-    # First line is the generation this job was dispatched at (see
-    # _tide_dispatch_render) -- a mismatch means a newer job has since been
-    # dispatched, so this result is stale and superseded; drop it rather
-    # than clobbering $prompt_var with old content. No repaint here is
-    # correct: the newer job has either already applied its own result or
-    # will signal on its own once it finishes.
-    test "$rendered[1]" = "$_tide_render_gen" || return
-    set -g $prompt_var $rendered[2..]
+    # Every job publishes under its own pid (see _tide_dispatch_render), so
+    # only the newest job's file is ever read: a superseded job that finishes
+    # late writes somewhere else entirely, where it can neither be read here
+    # nor overwrite fresher content. Nothing there yet means this signal came
+    # from such a straggler while the current job is still rendering -- drop
+    # it and wait, the current job signals for itself once it finishes.
+    set -q _tide_last_pid || return
+    set -l rendered (cat $_tide_prompt_tmpfile.$_tide_last_pid 2>/dev/null)
+    set -q rendered[1] || return
+    set -g $prompt_var $rendered
     set -g _tide_repaint
     commandline -f repaint
 end
@@ -75,33 +69,40 @@ function _tide_dispatch_render --inherit-variable prompt_var --inherit-variable 
         return
     end
 
-    set -g _tide_render_gen (math $_tide_render_gen + 1)
+    # Removing the previous job's files is left to the job below, so that fork
+    # lands in the background instead of on the interactive path.
+    set -l rm_stale
+    if set -q _tide_last_pid
+        set -l prev (string escape -- $_tide_prompt_tmpfile.$_tide_last_pid)
+        set rm_stale "command rm -f $prev 2>/dev/null"
 
-    # The job renders into a private scratch file (suffixed with its own
-    # pid) and atomically renames it over the shared tmpfile, so the
-    # SIGUSR1 handler can never read a partial write from a newer job. Its
-    # first line is stamped with the generation dispatched here (baked in
-    # as a literal below, not read back from the variable, since the job
-    # is a separate process) so _tide_refresh_prompt can recognize and
-    # drop a result superseded by a since-dispatched job. The tmpfile path
-    # crosses into the job string-escaped and is expanded as a variable
-    # there, never re-parsed as syntax, so any TMPDIR is safe.
+        # `.part` is renamed away the moment a job publishes, so one still
+        # sitting there means the previous job never finished -- only then is
+        # there anything to kill, and only then do we pay for the fork. Its
+        # scratch file is only safe to delete once that kill has landed:
+        # deleting it under a job that is still rendering would leave that
+        # job's rename with nothing to rename.
+        if test -e $_tide_prompt_tmpfile.$_tide_last_pid.part && command kill $_tide_last_pid 2>/dev/null
+            set -l prev_part (string escape -- $_tide_prompt_tmpfile.$_tide_last_pid.part)
+            set rm_stale "command rm -f $prev $prev_part 2>/dev/null"
+        end
+    end
+
+    # The job renders into a private scratch file and atomically renames it to
+    # a path named after its own pid, so the SIGUSR1 handler can never read a
+    # partial write, and a superseded job can never overwrite the result of a
+    # job dispatched after it. Paths cross into the job string-escaped -- and
+    # the tmpfile is expanded there as a variable, never re-parsed as syntax
+    # -- so any TMPDIR is safe.
     $fish_path -c "set _tide_pipestatus $_tide_pipestatus
 set _tide_parent_dirs $_tide_parent_dirs
 set _tide_prompt_tmpfile "(string escape -- $_tide_prompt_tmpfile)"
-echo $_tide_render_gen >\$_tide_prompt_tmpfile.\$fish_pid
-PATH="(string escape "$PATH")" CMD_DURATION=$CMD_DURATION fish_key_bindings=$fish_key_bindings fish_bind_mode=$fish_bind_mode $argv[1] >>\$_tide_prompt_tmpfile.\$fish_pid
-command mv -f \$_tide_prompt_tmpfile.\$fish_pid \$_tide_prompt_tmpfile
-command kill -s USR1 $fish_pid 2>/dev/null" &
+PATH="(string escape "$PATH")" CMD_DURATION=$CMD_DURATION fish_key_bindings=$fish_key_bindings fish_bind_mode=$fish_bind_mode $argv[1] >\$_tide_prompt_tmpfile.\$fish_pid.part
+command mv -f \$_tide_prompt_tmpfile.\$fish_pid.part \$_tide_prompt_tmpfile.\$fish_pid 2>/dev/null
+command kill -s USR1 $fish_pid 2>/dev/null
+$rm_stale" &
     builtin disown
 
-    # A completed job has already mv'd its scratch file away, so its
-    # existence means the previous job is still running or died mid-render --
-    # only then is there anything to kill/clean up, and only then do we pay
-    # for the two external forks.
-    test -e $_tide_prompt_tmpfile.$_tide_last_pid &&
-        command kill $_tide_last_pid 2>/dev/null &&
-        command rm -f $_tide_prompt_tmpfile.$_tide_last_pid
     set -g _tide_last_pid $last_pid
 
     if not set -q _tide_signal_confirmed
