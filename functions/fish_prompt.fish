@@ -146,7 +146,7 @@ function fish_prompt
     set -lx _tide_status \$status
     _tide_pipestatus=\$pipestatus if test \"\$_tide_repaint\" = \"\$_tide_cycle\"
         set -e _tide_repaint
-    else
+    else if not contains -- --final-rendering \$argv
         _tide_dispatch_render _tide_2_line_prompt
     end
 
@@ -185,7 +185,7 @@ function fish_prompt
     set -lx _tide_status \$status
     _tide_pipestatus=\$pipestatus if test \"\$_tide_repaint\" = \"\$_tide_cycle\"
         set -e _tide_repaint
-    else
+    else if not contains -- --final-rendering \$argv
         _tide_dispatch_render _tide_1_line_prompt
     end
 
