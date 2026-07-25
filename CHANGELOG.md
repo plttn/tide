@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.1.1](https://github.com/plttn/tide/compare/v7.1.0...v7.1.1) (2026-07-25)
+
+
+### Bug Fixes
+
+* **prompt:** stop a stale render sticking on the prompt ([#94](https://github.com/plttn/tide/issues/94)) ([936b533](https://github.com/plttn/tide/commit/936b533464b233257771ad7d35c951061e8ee55d))
+
 ## [7.1.0](https://github.com/plttn/tide/compare/v7.0.23...v7.1.0) (2026-07-23)
 
 
