@@ -153,4 +153,32 @@ echo overlap-stderr-lines (count <$stderr_log)
 # CHECK: overlap-stderr-lines 0
 command rm -f $stderr_log
 
+# A repaint requested in one prompt cycle must not suppress the render of the
+# next one. Both handlers can fire while a command is still running -- an
+# async render landing, or a terminal resize -- and the prompt drawn after
+# that command has to show the command's own status, not the previous one's.
+# `fish_postexec` doesn't fire for statements inside `fish -c`, so the cycle
+# boundary is emitted by hand.
+for source in render resize
+    fish -i -c "
+    false
+    fish_prompt >/dev/null
+    for i in (seq 1 50)
+        set -q _tide_repaint && break
+        sleep 0.01
+    end
+    test $source = resize && _tide_repaint_on_resize
+
+    emit fish_postexec
+    true; fish_prompt >/dev/null
+    for i in (seq 1 50)
+        test \"\$_tide_repaint\" = \"\$_tide_cycle\" && break
+        sleep 0.01
+    end
+    echo $source: (_tide_decolor (fish_prompt))
+" </dev/null
+end
+# CHECK: render: {{.*}}✔{{.*}}
+# CHECK: resize: {{.*}}✔{{.*}}
+
 set -e tide_left_prompt_items tide_right_prompt_items tide_prompt_add_newline_before tide_left_prompt_frame_enabled tide_right_prompt_frame_enabled tide_prompt_min_cols tide_status_icon tide_status_icon_failure tide_jobs_icon tide_jobs_number_threshold

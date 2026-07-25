@@ -16,6 +16,18 @@ set -g $prompt_var
 set -q _tide_prompt_tmpdir || set -g _tide_prompt_tmpdir (mktemp -d)
 set -g _tide_prompt_tmpfile $_tide_prompt_tmpdir/prompt
 
+# Bumped once per prompt cycle and stamped into $_tide_repaint every time a
+# repaint is requested. Without it, a repaint requested while a command is
+# still running -- a render landing, or a terminal resize, during a long
+# command -- would be mistaken for a repaint of the prompt drawn next, whose
+# render would then be skipped, leaving pre-command content on screen until
+# something else redrew it.
+set -q _tide_cycle || set -g _tide_cycle 0
+
+function _tide_next_prompt_cycle --on-event fish_postexec
+    set -g _tide_cycle (math $_tide_cycle + 1)
+end
+
 set_color normal | read -l color_normal
 status fish-path | read -l fish_path
 
@@ -35,7 +47,7 @@ function _tide_refresh_prompt --on-signal SIGUSR1 --inherit-variable prompt_var
     set -l rendered (cat $_tide_prompt_tmpfile.$_tide_last_pid 2>/dev/null)
     set -q rendered[1] || return
     set -g $prompt_var $rendered
-    set -g _tide_repaint
+    set -g _tide_repaint $_tide_cycle
     commandline -f repaint
 end
 
@@ -43,7 +55,7 @@ end
 # alone -- in synchronous-fallback mode the tmpfile is never written, so
 # reading it here would blank the prompt.
 function _tide_repaint_on_resize --on-variable COLUMNS
-    set -g _tide_repaint
+    set -g _tide_repaint $_tide_cycle
     commandline -f repaint
 end
 
@@ -132,7 +144,9 @@ if contains newline $_tide_left_items # two line prompt initialization
     eval "
 function fish_prompt
     set -lx _tide_status \$status
-    _tide_pipestatus=\$pipestatus if not set -e _tide_repaint
+    _tide_pipestatus=\$pipestatus if test \"\$_tide_repaint\" = \"\$_tide_cycle\"
+        set -e _tide_repaint
+    else
         _tide_dispatch_render _tide_2_line_prompt
     end
 
@@ -169,7 +183,9 @@ else # one line prompt initialization
     eval "
 function fish_prompt
     set -lx _tide_status \$status
-    _tide_pipestatus=\$pipestatus if not set -e _tide_repaint
+    _tide_pipestatus=\$pipestatus if test \"\$_tide_repaint\" = \"\$_tide_cycle\"
+        set -e _tide_repaint
+    else
         _tide_dispatch_render _tide_1_line_prompt
     end
 
