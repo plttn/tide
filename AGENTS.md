@@ -31,6 +31,10 @@ python3 littlecheck.py tests/_tide_item_node.test.fish
 
 Test files mock external commands (e.g. `node`, `git`) via [clownfish][clownfish]'s `mock` function — see `tests/_tide_item_node.test.fish` for the pattern. `tests/test_setup.fish` defines `_tide_decolor` (strips ANSI codes for assertions) and sets `_tide_side` for right-prompt items.
 
+### Debugging the async render path
+
+Timing bugs in the render path — a stale prompt, a missed repaint, two renders racing — usually can't be seen by calling `fish_prompt` from a script, since the bug is in *when* fish renders rather than in what one render prints. `scripts/prompt_probe/probe.py` drives a real interactive fish in a pty (isolated `HOME`, keystrokes, window resizes) and can log every render, dispatch and signal handler run. It is a manual tool, not part of `mise run test`; see `scripts/prompt_probe/README.md`.
+
 ## Architecture
 
 ### Item-based prompt composition
