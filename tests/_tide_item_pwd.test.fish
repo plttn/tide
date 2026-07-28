@@ -111,6 +111,18 @@ _pwd "$tmpdir/tmp/has spaces/foo" # CHECK: ~/tmp/has spaces/foo
 mkdir -p "$tmpdir/tmp/--has dashes/foo"
 _pwd "$tmpdir/tmp/--has dashes/foo" # CHECK: ~/tmp/--has dashes/foo
 
+# ---------- Truncation with a leading-dash directory (regression: upstream #668) ----------
+set -l longDashDir -alfa/bravo/charlie/delta/echo/foxtrot/golf/hotel/india/juliett/kilo/lima/mike/november/oscar/papa
+# trunc disambiguates against the sibling "--has dashes" dir made above
+_pwd $tmpdir/tmp/$longDashDir # CHECK: ~/t/-a/b/c/d/e/f/golf/hotel/india/juliett/kilo/lima/mike/november/oscar/papa
+
+# Same-prefix sibling forces the disambiguation loop to grow trunc past the
+# leading dash -- this used to hang because `string escape --style=regex`
+# choked on it without `--`.
+mkdir -p "$tmpdir/tmp/-alfahello"
+_pwd $tmpdir/tmp/$longDashDir # CHECK: ~/t/-alfa/b/c/d/e/f/golf/hotel/india/juliett/kilo/lima/mike/november/oscar/papa
+command rm -r "$tmpdir/tmp/-alfahello"
+
 mkdir -p "$tmpdir/tmp/has'quotes''/foo"
 _pwd "$tmpdir/tmp/has'quotes''/foo" # CHECK: ~/tmp/has'quotes''/foo
 
