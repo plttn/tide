@@ -18,7 +18,7 @@ function _tide_item_kubectl
         # exist, or the file didn't parse as expected -- let kubectl itself
         # figure it out.
         kubectl config view --minify --output 'jsonpath={.current-context}/{..namespace}' 2>/dev/null | read -l context &&
-            _tide_print_item kubectl $tide_kubectl_icon' ' (string replace -r '/(|default)$' '' $context)
+            _tide_print_item kubectl $tide_kubectl_icon' ' (string replace -r '/(|default)$' '' -- $context)
         return
     end
 

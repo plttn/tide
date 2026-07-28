@@ -17,6 +17,11 @@ _kubectl # CHECK: ⎈ curr-context
 mock kubectl "config view --minify --output" "echo curr-context/"
 _kubectl # CHECK: ⎈ curr-context
 
+# regression: a context name starting with "-" must not be read as an
+# option by the `string replace` that strips the trailing "/default"
+mock kubectl "config view --minify --output" "echo -curr-context/default"
+_kubectl # CHECK: ⎈ -curr-context
+
 mock kubectl "config view --minify --output" "echo curr-context/curr-namespace"
 _kubectl # CHECK: ⎈ curr-context/curr-namespace
 
