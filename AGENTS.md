@@ -12,7 +12,6 @@ Everything is written in Fish script (`.fish`); there is no build step or compil
 
 All tasks are run via [mise][mise] (use `mise`, not `make`):
 
-- `mise run all` — fmt, lint, install, test (the standard pre-PR check)
 - `mise run fmt` — format all `.fish` files with `fish_indent`
 - `mise run lint` — syntax-check all `.fish` files via `fish --no-execute`
 - `mise run install` — install Tide + test deps (fisher, clownfish) into the current Fish config
@@ -51,9 +50,11 @@ Which items appear and in what order is controlled by the universal variables `t
 
 `functions/fish_prompt.fish` is the entry point Fish calls to render a prompt. On each render it:
 
-1. Kicks off a **background job** (a second `fish -c ...` subprocess) that computes the actual prompt content by calling `_tide_1_line_prompt` or `_tide_2_line_prompt` (chosen at load time based on whether `newline` is in `$_tide_left_items`), and stores the result in a per-PID universal variable `_tide_prompt_$fish_pid`
+1. Kicks off a **background job** (a second `fish -c ...` subprocess) that computes the actual prompt content by calling `_tide_1_line_prompt` or `_tide_2_line_prompt` (chosen at load time based on whether `newline` is in `$_tide_left_items`), renders it into a private scratch tmpfile named after its own pid, atomically renames it into place, then signals the parent with `SIGUSR1`
 2. Immediately returns a (possibly stale) previous render so the shell never blocks
-3. When the background job writes the uvar, `_tide_refresh_prompt` (an `--on-variable` handler) triggers `commandline -f repaint`, which re-renders `fish_prompt`/`fish_right_prompt` with the fresh content
+3. `_tide_refresh_prompt` (an `--on-signal SIGUSR1` handler) reads the tmpfile into a session-local global variable (`_tide_prompt_$fish_pid`) and calls `commandline -f repaint`, which re-renders `fish_prompt`/`fish_right_prompt` with the fresh content
+
+If `SIGUSR1` delivery can't be confirmed at shell init (some sandboxes/containers swallow signals — checked once via a `SIGUSR2` self-test), rendering falls back to fully synchronous instead of spawning a background job that could never notify completion.
 
 This async design is why Tide can afford expensive checks (e.g. full git status with untracked/modified/deleted counts) that would make a synchronous prompt feel slow. `fish_prompt.fish` itself is built with a large `eval "..."` block assembled once at shell-init time (varies by one-line vs two-line, frame-enabled vs not) rather than branching on every render, since load time matters more than per-render branching cost here.
 
