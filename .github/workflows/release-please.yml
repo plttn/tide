@@ -4,6 +4,13 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: release-please-${{ github.ref }}
+  # Queue overlapping runs instead of cancelling: an in-progress run may have
+  # already tagged a release, and cancelling mid-run could leave that state
+  # half-applied.
+  cancel-in-progress: false
+
 permissions:
   contents: write
   issues: write
