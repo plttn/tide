@@ -1,5 +1,13 @@
 # Changelog
 
+## [7.1.2](https://github.com/plttn/tide/compare/v7.1.1...v7.1.2) (2026-07-30)
+
+
+### Bug Fixes
+
+* **kubectl:** stop context names starting with "-" from being misread as a flag ([#100](https://github.com/plttn/tide/issues/100)) ([27fcdf0](https://github.com/plttn/tide/commit/27fcdf06c1e0e5c6f5cbb1cacac6bafacafeeba4))
+* **prompt:** stop dash-led directories from breaking pwd truncation ([#98](https://github.com/plttn/tide/issues/98)) ([8be1dbb](https://github.com/plttn/tide/commit/8be1dbb80183447b6d0989c522fdd1fc6bf1f557))
+
 ## [7.1.1](https://github.com/plttn/tide/compare/v7.1.0...v7.1.1) (2026-07-25)
 
 
