@@ -1,8 +1,8 @@
-<div align="center"><img src="https://github.com/IlanCosman/tide/blob/assets/images/logo.svg" width="480"/></div>
+<div align="center"><img src="https://yeet.jack.is/u/logo.svg" width="480"/></div>
 
 <h2></h2>
 
-<img src="https://github.com/IlanCosman/tide/blob/assets/images/header.png" width="50%" align="right"/>
+<img src="https://yeet.jack.is/u/header.png" width="50%" align="right"/>
 
 **The ultimate Fish prompt.**
 
@@ -47,7 +47,7 @@ Run `tide configure` to open the wizard in your terminal.
 
 ![configuration_wizard][]
 
-<img src="https://github.com/IlanCosman/tide/blob/assets/images/flexible.png" width="61.8%" align="right"/>
+<img src="https://yeet.jack.is/u/flexible.png" width="61.8%" align="right"/>
 
 ### Flexible
 
@@ -55,7 +55,7 @@ Using the [`items`][] list for each side of the prompt, you have full control of
 
 <br clear="right">
 
-<img src="https://github.com/IlanCosman/tide/blob/assets/images/extendable.png" width="61.8%" align="left"/>
+<img src="https://yeet.jack.is/u/extendable.png" width="61.8%" align="left"/>
 
 ### Extendable
 
@@ -75,7 +75,7 @@ Asynchronous rendering also lets Tide display more information than other prompt
 
 The current working directory is the most important part of any shell prompt. Tide highlights the critical parts and truncates with the least loss of information when horizontal space is scarce.
 
-<div align="center"><img src="https://github.com/IlanCosman/tide/blob/assets/images/pwd.png"/></div>
+<div align="center"><img src="https://yeet.jack.is/u/pwd.png"/></div>
 
 When the full directory doesn't fit, the leftmost segment is truncated to its shortest unique prefix. In the example above, `Documents` becomes `Doc` instead of `D` because that could be confused with `Downloads`. Important segments are bold and never truncated. These include the last segment, root of a Git repository etc.
 
@@ -97,7 +97,6 @@ If you're interested in helping contribute to Tide, please take a look at the [C
 - [Powerlevel10k][] - Inspired Tide's creation. Because Tide aims to replicate Powerlevel10k's amazing capabilities, small sections of documentation have been borrowed when rewording the language would reduce clarity.
 - [Starship][] - Inspired elements of Tide's documentation and community health files.
 - [Spacefish][] - Inspired some of Tide's items.
-- 
 
 ## Appendix
 
@@ -108,18 +107,18 @@ necessary.
 
 #### Enabled by default
 
-- Ghostty
-- Wezterm
-- kitty
-- Windows Terminal
+- [Ghostty](https://ghostty.org/docs/config#zero-configuration-philosophy)
+- [Wezterm](https://wezterm.org/config/lua/wezterm/nerdfonts.html)
+- [kitty](https://sw.kovidgoyal.net/kitty/faq/#kitty-is-not-able-to-use-my-favorite-font)
+- [Windows Terminal](https://github.com/microsoft/terminal/pull/16821)
 
 #### Enabled as option
 
 - [iTerm](https://iterm2.com/documentation-preferences-profiles-text.html)
 
 [`items`]: https://github.com/plttn/tide/wiki/Configuration#items
-[async]: https://github.com/IlanCosman/tide/blob/assets/animations/async.png
-[configuration_wizard]: https://github.com/IlanCosman/tide/blob/assets/animations/configuration_wizard.webp
+[async]: https://yeet.jack.is/u/async.png
+[configuration_wizard]: https://yeet.jack.is/u/configuration_wizard.webp
 [contributing guide]: CONTRIBUTING.md
 [fish]: https://fishshell.com/
 [fisher]: https://github.com/jorgebucaran/fisher
