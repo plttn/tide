@@ -137,10 +137,11 @@ fish -i -c '
 # CHECK: applied: fresh-content
 
 # Superseding a render has to stay silent. Each job cleans up after the one
-# before it, and a job still rendering is killed first -- take its scratch
-# file away without killing it and its rename has nothing to rename, so it
-# complains to the terminal from a background process the prompt no longer
-# controls. Dispatching renders back to back makes jobs overlap.
+# before it, even if that one is still rendering -- deleting its scratch
+# file out from under it is a silent no-op (the writer keeps writing to the
+# orphaned inode, and its later rename just fails to find the source, which
+# is already redirected away). Dispatching renders back to back makes jobs
+# overlap.
 set -l stderr_log (mktemp)
 fish -i -c '
     for i in (seq 20)
