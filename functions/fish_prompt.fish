@@ -43,8 +43,16 @@ function _tide_refresh_prompt --on-signal SIGUSR1 --inherit-variable prompt_var
     # nor overwrite fresher content. Nothing there yet means this signal came
     # from such a straggler while the current job is still rendering -- drop
     # it and wait, the current job signals for itself once it finishes.
+    #
+    # The file is read with a builtin rather than `cat`: this handler runs in
+    # the interactive shell, where a fork costs hundreds of ms on WSL2. A
+    # builtin's failed redirect warns in a way `2>/dev/null` can't silence,
+    # hence the `test -e` first. Only a job dispatched after this one deletes
+    # this file, and none can be dispatched while the handler runs, so the
+    # file can't vanish between the check and the read.
     set -q _tide_last_pid || return
-    set -l rendered (cat $_tide_prompt_tmpfile.$_tide_last_pid 2>/dev/null)
+    test -e $_tide_prompt_tmpfile.$_tide_last_pid || return
+    set -l rendered (string replace -r '' '' <$_tide_prompt_tmpfile.$_tide_last_pid)
     set -q rendered[1] || return
     set -g $prompt_var $rendered
     set -g _tide_repaint $_tide_cycle
