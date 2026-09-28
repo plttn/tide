@@ -89,21 +89,28 @@ function _tide_dispatch_render --inherit-variable prompt_var --inherit-variable 
         return
     end
 
-    # Removing the previous job's files is left to the job below, so the
-    # forks for it land in the background instead of on the interactive
-    # path. A still-rendering previous job is no longer killed here -- that
-    # synchronous fork was measured at ~470ms on WSL2, badly overlapping
-    # every render. Deleting its scratch file regardless of whether it's
-    # still alive is safe: unlinking a file a process still has open for
-    # writing is a silent no-op on POSIX filesystems (the writer keeps
-    # writing to the orphaned inode), and its later `mv -f` (by name) just
-    # fails to find the source -- already `2>/dev/null`. Per-pid keying
-    # means nobody but the job that wrote a file ever reads it, so a late
-    # finish that loses its rename target is harmless either way.
+    # Stopping the previous job and removing its files is left to the job
+    # below, so those forks land in the background instead of on the
+    # interactive path, where one fork can cost hundreds of ms on WSL2.
+    #
+    # The new job kills the previous one before it renders, so a burst of
+    # prompts (vi mode switches, repaints from other plugins) leaves one live
+    # render instead of one per prompt. It kills only while the previous job
+    # hasn't published: only the new job itself deletes that file, so until
+    # it exists the previous job is still starting or rendering (unless it
+    # crashed), which keeps the chance of killing a reused pid small.
+    #
+    # The files go after the new job's own render. If the kill missed (the
+    # previous job published in between), unlinking a file a process still
+    # has open is silent, and that job's `mv -f` then fails into
+    # `2>/dev/null`. A job that starts after its successor's cleanup can still
+    # leave a file behind; the tmpdir is removed on exit.
+    set -l stop_stale
     set -l rm_stale
     if set -q _tide_last_pid
         set -l prev (string escape -- $_tide_prompt_tmpfile.$_tide_last_pid)
         set -l prev_part (string escape -- $_tide_prompt_tmpfile.$_tide_last_pid.part)
+        set stop_stale "test -e $prev || command kill $_tide_last_pid 2>/dev/null"
         set rm_stale "command rm -f $prev $prev_part 2>/dev/null"
     end
 
@@ -113,7 +120,8 @@ function _tide_dispatch_render --inherit-variable prompt_var --inherit-variable 
     # job dispatched after it. Paths cross into the job string-escaped -- and
     # the tmpfile is expanded there as a variable, never re-parsed as syntax
     # -- so any TMPDIR is safe.
-    $fish_path -c "set _tide_pipestatus $_tide_pipestatus
+    $fish_path -c "$stop_stale
+set _tide_pipestatus $_tide_pipestatus
 set _tide_parent_dirs $_tide_parent_dirs
 set _tide_prompt_tmpfile "(string escape -- $_tide_prompt_tmpfile)"
 PATH="(string escape "$PATH")" CMD_DURATION=$CMD_DURATION fish_key_bindings=$fish_key_bindings fish_bind_mode=$fish_bind_mode $argv[1] >\$_tide_prompt_tmpfile.\$fish_pid.part
