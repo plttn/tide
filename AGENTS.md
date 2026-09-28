@@ -15,18 +15,20 @@ All tasks are run via [mise][mise] (use `mise`, not `make`):
 - `mise run fmt` — format all `.fish` files with `fish_indent`
 - `mise run lint` — syntax-check all `.fish` files via `fish --no-execute`
 - `mise run install` — install Tide + test deps (fisher, clownfish) into the current Fish config
-- `mise run test` — run the full littlecheck suite (`scripts/test.fish`)
+- `mise run test [FILE...]` — run the littlecheck suite, or only the given test files (`scripts/test.fish`)
 - `mise run test-clean` — wipe the cached local test `HOME` (`scripts/test_clean.fish`) if the test env gets into a bad state
 
 ### Running a single test
 
-Tests are [littlecheck][littlecheck] `.fish` files under `tests/`, each a self-contained script with `# CHECK:` comments asserting stdout. Run one directly:
+Tests are [littlecheck][littlecheck] `.fish` files under `tests/`, each a self-contained script with `# CHECK:` comments asserting stdout. Pass one or more to `mise run test` to run only those:
 
 ```fish
-python3 littlecheck.py tests/_tide_item_node.test.fish
+mise run test tests/_tide_item_node.test.fish
 ```
 
-(`littlecheck.py` is fetched by `mise run littlecheck`, a dependency of `mise run test`.) A local run reuses a persistent `HOME` (`$XDG_CACHE_HOME/tide-test-home` or `~/.cache/tide-test-home`) so `fisher`/`clownfish` aren't reinstalled every run; `mise run install` still resyncs local edits into it. In CI (`GITHUB_ACTIONS=true`) this caching is skipped and everything runs in a clean environment.
+Never run `python3 littlecheck.py` on a test file yourself. Test files set universal variables (`set -U tide_left_prompt_items ...`) and `funcsave` helpers, so outside the test `HOME` they overwrite the real fish config and break the user's prompt. `mise run install` also writes to the real config, so don't use it to verify changes either.
+
+A local run reuses a persistent `HOME` (`$XDG_CACHE_HOME/tide-test-home` or `~/.cache/tide-test-home`) so `fisher`/`clownfish` aren't reinstalled every run; each run still installs the working copy into it. In CI (`GITHUB_ACTIONS=true`) this caching is skipped and everything runs in a clean environment.
 
 Test files mock external commands (e.g. `node`, `git`) via [clownfish][clownfish]'s `mock` function — see `tests/_tide_item_node.test.fish` for the pattern. `tests/test_setup.fish` defines `_tide_decolor` (strips ANSI codes for assertions) and sets `_tide_side` for right-prompt items.
 

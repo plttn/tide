@@ -1,5 +1,10 @@
 #!/usr/bin/env fish
 
+# Test files named as arguments run alone, e.g.
+# `mise run test tests/fish_prompt.test.fish`; with none, every test runs.
+set -l test_files 'tests/**.test.fish'
+set -q argv[1] && set test_files (string escape -- $argv)
+
 set -l inner_cmd "
 type -q fisher || begin
     curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source #when running in CI like GHA, we'll have already installed Fisher so this is a no-op
@@ -11,7 +16,7 @@ fish tests/test_cleanup.fish
 fish tests/test_setup.fish
 _tide_remove_unusable_items
 _tide_cache_variables
-python3 littlecheck.py --progress tests/**.test.fish
+python3 littlecheck.py --progress $test_files
 set -l test_status \$status
 fish tests/test_cleanup.fish
 exit \$test_status
