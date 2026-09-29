@@ -43,8 +43,16 @@ function _tide_refresh_prompt --on-signal SIGUSR1 --inherit-variable prompt_var
     # nor overwrite fresher content. Nothing there yet means this signal came
     # from such a straggler while the current job is still rendering -- drop
     # it and wait, the current job signals for itself once it finishes.
+    #
+    # The file is read with a builtin rather than `cat`: this handler runs in
+    # the interactive shell, where a fork costs hundreds of ms on WSL2. A
+    # builtin's failed redirect warns in a way `2>/dev/null` can't silence,
+    # hence the `test -e` first. Only a job dispatched after this one deletes
+    # this file, and none can be dispatched while the handler runs, so the
+    # file can't vanish between the check and the read.
     set -q _tide_last_pid || return
-    set -l rendered (cat $_tide_prompt_tmpfile.$_tide_last_pid 2>/dev/null)
+    test -e $_tide_prompt_tmpfile.$_tide_last_pid || return
+    set -l rendered (string replace -r '' '' <$_tide_prompt_tmpfile.$_tide_last_pid)
     set -q rendered[1] || return
     set -g $prompt_var $rendered
     set -g _tide_repaint $_tide_cycle
@@ -81,23 +89,29 @@ function _tide_dispatch_render --inherit-variable prompt_var --inherit-variable 
         return
     end
 
-    # Removing the previous job's files is left to the job below, so that fork
-    # lands in the background instead of on the interactive path.
+    # Stopping the previous job and removing its files is left to the job
+    # below, so those forks land in the background instead of on the
+    # interactive path, where one fork can cost hundreds of ms on WSL2.
+    #
+    # The new job kills the previous one before it renders, so a burst of
+    # prompts (vi mode switches, repaints from other plugins) leaves one live
+    # render instead of one per prompt. It kills only while the previous job
+    # hasn't published: only the new job itself deletes that file, so until
+    # it exists the previous job is still starting or rendering (unless it
+    # crashed), which keeps the chance of killing a reused pid small.
+    #
+    # The files go after the new job's own render. If the kill missed (the
+    # previous job published in between), unlinking a file a process still
+    # has open is silent, and that job's `mv -f` then fails into
+    # `2>/dev/null`. A job that starts after its successor's cleanup can still
+    # leave a file behind; the tmpdir is removed on exit.
+    set -l stop_stale
     set -l rm_stale
     if set -q _tide_last_pid
         set -l prev (string escape -- $_tide_prompt_tmpfile.$_tide_last_pid)
-        set rm_stale "command rm -f $prev 2>/dev/null"
-
-        # `.part` is renamed away the moment a job publishes, so one still
-        # sitting there means the previous job never finished -- only then is
-        # there anything to kill, and only then do we pay for the fork. Its
-        # scratch file is only safe to delete once that kill has landed:
-        # deleting it under a job that is still rendering would leave that
-        # job's rename with nothing to rename.
-        if test -e $_tide_prompt_tmpfile.$_tide_last_pid.part && command kill $_tide_last_pid 2>/dev/null
-            set -l prev_part (string escape -- $_tide_prompt_tmpfile.$_tide_last_pid.part)
-            set rm_stale "command rm -f $prev $prev_part 2>/dev/null"
-        end
+        set -l prev_part (string escape -- $_tide_prompt_tmpfile.$_tide_last_pid.part)
+        set stop_stale "test -e $prev || command kill $_tide_last_pid 2>/dev/null"
+        set rm_stale "command rm -f $prev $prev_part 2>/dev/null"
     end
 
     # The job renders into a private scratch file and atomically renames it to
@@ -106,7 +120,8 @@ function _tide_dispatch_render --inherit-variable prompt_var --inherit-variable 
     # job dispatched after it. Paths cross into the job string-escaped -- and
     # the tmpfile is expanded there as a variable, never re-parsed as syntax
     # -- so any TMPDIR is safe.
-    $fish_path -c "set _tide_pipestatus $_tide_pipestatus
+    $fish_path -c "$stop_stale
+set _tide_pipestatus $_tide_pipestatus
 set _tide_parent_dirs $_tide_parent_dirs
 set _tide_prompt_tmpfile "(string escape -- $_tide_prompt_tmpfile)"
 PATH="(string escape "$PATH")" CMD_DURATION=$CMD_DURATION fish_key_bindings=$fish_key_bindings fish_bind_mode=$fish_bind_mode $argv[1] >\$_tide_prompt_tmpfile.\$fish_pid.part

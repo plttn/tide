@@ -68,8 +68,8 @@ TRACE_PATCHES = [
     ),
     (
         1,
-        "    set -l rendered (cat $_tide_prompt_tmpfile.$_tide_last_pid 2>/dev/null)",
-        "    set -l rendered (cat $_tide_prompt_tmpfile.$_tide_last_pid 2>/dev/null)\n"
+        "    set -l rendered (string replace -r '' '' <$_tide_prompt_tmpfile.$_tide_last_pid)",
+        "    set -l rendered (string replace -r '' '' <$_tide_prompt_tmpfile.$_tide_last_pid)\n"
         '    _tide_probe_log "  handler: reading pid=$_tide_last_pid lines="(count $rendered)" cycle=$_tide_cycle"',
     ),
     (

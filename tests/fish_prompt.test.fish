@@ -136,11 +136,31 @@ fish -i -c '
 ' </dev/null
 # CHECK: applied: fresh-content
 
+# A signal from a superseded job can arrive before the current job has
+# published anything. The handler has to drop it silently: reading the
+# missing file with a builtin would print a warning that `2>/dev/null`
+# can't hide. Point $_tide_last_pid at a job that never publishes.
+set -l stderr_log (mktemp)
+fish -i -c '
+    fish_prompt >/dev/null
+    for i in (seq 1 50)
+        set -q _tide_repaint && break
+        sleep 0.01
+    end
+    set -g _tide_last_pid 999999
+    command kill -s USR1 $fish_pid
+    sleep 0.1
+' </dev/null 2>$stderr_log
+echo early-signal-stderr-lines (count <$stderr_log)
+# CHECK: early-signal-stderr-lines 0
+command rm -f $stderr_log
+
 # Superseding a render has to stay silent. Each job cleans up after the one
-# before it, and a job still rendering is killed first -- take its scratch
-# file away without killing it and its rename has nothing to rename, so it
-# complains to the terminal from a background process the prompt no longer
-# controls. Dispatching renders back to back makes jobs overlap.
+# before it, even if that one is still rendering -- deleting its scratch
+# file out from under it is a silent no-op (the writer keeps writing to the
+# orphaned inode, and its later rename just fails to find the source, which
+# is already redirected away). Dispatching renders back to back makes jobs
+# overlap.
 set -l stderr_log (mktemp)
 fish -i -c '
     for i in (seq 20)
@@ -180,5 +200,35 @@ for source in render resize
 end
 # CHECK: render: {{.*}}✔{{.*}}
 # CHECK: resize: {{.*}}✔{{.*}}
+
+# A burst of prompts must not leave a pile of render jobs behind. Each job
+# stops the one before it, so once they have all started only the newest is
+# still alive. A fake `node` that hangs makes every render slow, as a big
+# repo would on a slow machine. The prompts are dispatched back to back, so
+# most jobs start before the one before them has begun rendering. Stderr is
+# discarded because the orphaned fake `node` processes keep it open.
+set -l slow_bin (mktemp -d)
+echo '#!/bin/sh
+exec sleep 5 >/dev/null 2>&1' >$slow_bin/node
+chmod +x $slow_bin/node
+set -l node_project (mktemp -d)
+echo '{}' >$node_project/package.json
+set -U tide_left_prompt_items node
+
+pushd $node_project
+env PATH="$slow_bin:$PATH" fish -i -c '
+    for i in (seq 10)
+        set -e _tide_repaint
+        fish_prompt >/dev/null
+    end
+    for i in (seq 1 30)
+        test (command pgrep -P $fish_pid fish | count) -le 1 && break
+        sleep 0.1
+    end
+    echo live-render-jobs (command pgrep -P $fish_pid fish | count)
+' </dev/null 2>/dev/null
+popd
+# CHECK: live-render-jobs 1
+command rm -r $slow_bin $node_project
 
 set -e tide_left_prompt_items tide_right_prompt_items tide_prompt_add_newline_before tide_left_prompt_frame_enabled tide_right_prompt_frame_enabled tide_prompt_min_cols tide_status_icon tide_status_icon_failure tide_jobs_icon tide_jobs_number_threshold
