@@ -190,7 +190,9 @@ if(self.contained_in("::trunk() & ~::@"),
                 set workspace_label " $bold_brgreen_color$parts[4]$reset"
             end
 
-            # Description (configurable via tide_jj_show_description and tide_jj_description_length)
+            # Description (configurable via tide_jj_show_description and
+            # tide_jj_description_length). New installs turn it off through the
+            # configs; it stays on when unset so existing setups don't change.
             set -l show_desc true
             set -q tide_jj_show_description; and set show_desc $tide_jj_show_description
             set -l desc_length 24
