@@ -107,7 +107,9 @@ if(self.contained_in("::trunk() & ~::@"),
     # Bookmark names are often long ticket slugs, so cap each one's length
     # (configurable via tide_jj_bookmark_length; 0 disables truncation).
     set -l bm_length 24
-    set -q tide_jj_bookmark_length; and set bm_length $tide_jj_bookmark_length
+    # Only a whole number counts, so a typo falls back to the default
+    # instead of erroring from the background render.
+    string match -qr '^\d+$' -- "$tide_jj_bookmark_length" && set bm_length $tide_jj_bookmark_length
 
     set -l info ""
     set -l has_conflict 0
@@ -192,7 +194,7 @@ if(self.contained_in("::trunk() & ~::@"),
             set -l show_desc true
             set -q tide_jj_show_description; and set show_desc $tide_jj_show_description
             set -l desc_length 24
-            set -q tide_jj_description_length; and set desc_length $tide_jj_description_length
+            string match -qr '^\d+$' -- "$tide_jj_description_length" && set desc_length $tide_jj_description_length
             set -l desc_label ""
             if test -n "$parts[8]"; and test "$show_desc" = true
                 set -l desc $parts[8]
