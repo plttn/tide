@@ -229,6 +229,26 @@ env PATH="$slow_bin:$PATH" fish -i -c '
 ' </dev/null 2>/dev/null
 popd
 # CHECK: live-render-jobs 1
+
+# Once the burst settles, only the newest render's file is left. Jobs that
+# were killed before their own cleanup ran used to leave theirs behind for
+# the rest of the session. A shorter hang lets the newest job finish here.
+echo '#!/bin/sh
+exec sleep 1 >/dev/null 2>&1' >$slow_bin/node
+pushd $node_project
+env PATH="$slow_bin:$PATH" fish -i -c '
+    for i in (seq 10)
+        set -e _tide_repaint
+        fish_prompt >/dev/null
+    end
+    for i in (seq 1 50)
+        test (count $_tide_prompt_tmpdir/*) -le 1 && break
+        sleep 0.1
+    end
+    echo render-files (count $_tide_prompt_tmpdir/*)
+' </dev/null 2>/dev/null
+popd
+# CHECK: render-files 1
 command rm -r $slow_bin $node_project
 
 set -e tide_left_prompt_items tide_right_prompt_items tide_prompt_add_newline_before tide_left_prompt_frame_enabled tide_right_prompt_frame_enabled tide_prompt_min_cols tide_status_icon tide_status_icon_failure tide_jobs_icon tide_jobs_number_threshold

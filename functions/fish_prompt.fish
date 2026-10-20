@@ -48,12 +48,15 @@ function _tide_refresh_prompt --on-signal SIGUSR1 --inherit-variable prompt_var
     # the interactive shell, where a fork costs hundreds of ms on WSL2. A
     # builtin's failed redirect warns in a way `2>/dev/null` can't silence,
     # hence the `test -e` first. Only a job dispatched after this one deletes
-    # this file, and none can be dispatched while the handler runs, so the
-    # file can't vanish between the check and the read.
+    # this file, and only once that job has finished its own render, so in
+    # practice it can't vanish in the moment between the check and the read.
     set -q _tide_last_pid || return
     test -e $_tide_prompt_tmpfile.$_tide_last_pid || return
     set -l rendered (string replace -r '' '' <$_tide_prompt_tmpfile.$_tide_last_pid)
     set -q rendered[1] || return
+    # Marks this job as finished even if a tmp cleaner later deletes its file,
+    # so it's never mistaken for one still running (see _tide_dispatch_render).
+    set -g _tide_done_pid $_tide_last_pid
     set -g $prompt_var $rendered
     set -g _tide_repaint $_tide_cycle
     commandline -f repaint
@@ -93,26 +96,46 @@ function _tide_dispatch_render --inherit-variable prompt_var --inherit-variable 
     # below, so those forks land in the background instead of on the
     # interactive path, where one fork can cost hundreds of ms on WSL2.
     #
-    # The new job kills the previous one before it renders, so a burst of
-    # prompts (vi mode switches, repaints from other plugins) leaves one live
-    # render instead of one per prompt. It kills only while the previous job
-    # hasn't published: only the new job itself deletes that file, so until
-    # it exists the previous job is still starting or rendering (unless it
-    # crashed), which keeps the chance of killing a reused pid small.
+    # The new job kills every earlier job that may still be running before it
+    # renders, so a burst of prompts (vi mode switches, repaints from other
+    # plugins) leaves one live render instead of one per prompt. Killing only
+    # the job just before it isn't enough: jobs start up at uneven speeds, so
+    # a job can be killed before it gets to kill its own predecessor.
     #
-    # The files go after the new job's own render. If the kill missed (the
-    # previous job published in between), unlinking a file a process still
-    # has open is silent, and that job's `mv -f` then fails into
-    # `2>/dev/null`. A job that starts after its successor's cleanup can still
-    # leave a file behind; the tmpdir is removed on exit.
-    set -l stop_stale
-    set -l rm_stale
-    if set -q _tide_last_pid
-        set -l prev (string escape -- $_tide_prompt_tmpfile.$_tide_last_pid)
-        set -l prev_part (string escape -- $_tide_prompt_tmpfile.$_tide_last_pid.part)
-        set stop_stale "test -e $prev || command kill $_tide_last_pid 2>/dev/null"
-        set rm_stale "command rm -f $prev $prev_part 2>/dev/null"
+    # $_tide_render_pids lists the jobs that may still be running or still
+    # have files, oldest first. Walking it newest first, using only builtins:
+    # - A job that has published (or whose render the handler already read)
+    #   has finished, and so has already killed every job before it and will
+    #   remove their files after its render. The walk stops there.
+    # - A job whose `.part` file exists has started, so it has already killed
+    #   every job before it. Those older jobs are left off the kill list,
+    #   which keeps the chance of killing a reused pid small.
+    #
+    # The files go after the new job's own render. If a kill missed (that job
+    # published in between), unlinking a file a process still has open is
+    # silent, and that job's `mv -f` then fails into `2>/dev/null`. Anything
+    # still left behind is removed with the tmpdir on exit.
+    set -l kill_pids
+    set -l stale_files
+    set -l tracked
+    set -l started false
+    for pid in $_tide_render_pids[-1..1]
+        set -l file $_tide_prompt_tmpfile.$pid
+        set -a stale_files (string escape -- $file $file.part)
+        set -p tracked $pid
+        if test "$pid" = "$_tide_done_pid" || test -e $file
+            break
+        end
+        test $started = false && set -a kill_pids $pid
+        test -e $file.part && set started true
     end
+    # Bound the list if renders keep hanging without ever publishing.
+    set -q tracked[33] && set tracked $tracked[-32..-1]
+
+    set -l stop_stale
+    set -q kill_pids[1] && set stop_stale "command kill $kill_pids 2>/dev/null"
+    set -l rm_stale
+    set -q stale_files[1] && set rm_stale "command rm -f $stale_files 2>/dev/null"
 
     # The job renders into a private scratch file and atomically renames it to
     # a path named after its own pid, so the SIGUSR1 handler can never read a
@@ -131,6 +154,7 @@ $rm_stale" &
     builtin disown
 
     set -g _tide_last_pid $last_pid
+    set -g _tide_render_pids $tracked $last_pid
 
     if not set -q _tide_signal_confirmed
         for _tide_i in (seq 1 10)
@@ -223,15 +247,26 @@ end"
 end
 
 function _tide_on_fish_exit --on-event fish_exit
-    # The last dispatched render job is disowned, so nothing else waits for
-    # it -- kill it and confirm it's dead before removing the tmpdir it
-    # writes into, or a job that's still starting up (e.g. a nested shell
-    # exited right after launch) can fail its redirect into a dir we just
-    # deleted and print a spurious warning.
-    if set -q _tide_last_pid
-        command kill $_tide_last_pid 2>/dev/null
+    # Render jobs are disowned, so nothing else waits for them -- kill any
+    # that may still be running and confirm they're dead before removing the
+    # tmpdir they write into, or a job that's still starting up (e.g. a
+    # nested shell exited right after launch) can fail its redirect into a
+    # dir we just deleted and print a spurious warning.
+    set -l live
+    # $_tide_last_pid is always the last entry already; listing it again just
+    # makes sure the newest job is covered even if the list was never set.
+    for pid in $_tide_render_pids $_tide_last_pid
+        test "$pid" = "$_tide_done_pid" || test -e $_tide_prompt_tmpfile.$pid || set -a live $pid
+    end
+    if set -q live[1]
+        command kill $live 2>/dev/null
         for _tide_i in (seq 1 10)
-            command kill -0 $_tide_last_pid 2>/dev/null || break
+            set -l alive
+            for pid in $live
+                command kill -0 $pid 2>/dev/null && set -a alive $pid
+            end
+            set -q alive[1] || break
+            set live $alive
             sleep 0.01
         end
     end
