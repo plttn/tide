@@ -20,6 +20,8 @@ set -lx tide_pwd_icon_home home_icon
 set -lx tide_pwd_icon normal_icon
 
 # ------------------Starts with slash------------------
+# Assumes the suite runs as a non-root user: the first check expects `/` to be
+# unwritable, which isn't true as root (e.g. in some containers/sandboxes).
 _pwd / # CHECK: unwritable_icon /
 _pwd /tmp # CHECK: normal_icon /tmp
 _pwd /tmp/foo # CHECK: normal_icon /tmp/foo
