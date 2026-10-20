@@ -1,5 +1,6 @@
 # RUN: %fish %s
 _tide_parent_dirs
+set -l tests_dir (path resolve (status dirname))
 
 function _git
     git $argv >/dev/null 2>&1
@@ -111,8 +112,17 @@ chmod +x $dir/bin/jj
 set -gx PATH $dir/bin $PATH
 
 cd $dir/jj-repo
-# The description is hidden unless tide_jj_show_description is true
-_vcs_item # CHECK: (@ abc123 main def456 * ↑1)
+# New installs (and `tide configure`) hide the description through the configs
+set -l configs $tests_dir/../functions/tide/configure/configs/*.fish
+for config in $configs
+    string match -q 'tide_jj_show_description false' <$config && echo $config
+end | count
+# CHECK: 6
+
+# A setup from before the option existed has no variable, and keeps showing it
+set -q tide_jj_show_description && set -l saved_show_desc $tide_jj_show_description
+set -e -U tide_jj_show_description
+_vcs_item # CHECK: (@ abc123 main def456 * desc ↑1)
 
 set -g tide_jj_show_description false
 _vcs_item # CHECK: (@ abc123 main def456 * ↑1)
@@ -174,6 +184,7 @@ _vcs_item # CHECK: (@ xyz999 this-is-a-very-long-at-bookmark-name def999 * desc 
 set -e tide_jj_bookmark_length
 
 set -e tide_jj_show_description
+set -q saved_show_desc[1] && set -U tide_jj_show_description $saved_show_desc
 
 # ------ cleanup ------
 command rm -r $dir

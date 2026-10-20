@@ -188,10 +188,10 @@ if(self.contained_in("::trunk() & ~::@"),
                 set workspace_label " $bold_brgreen_color$parts[4]$reset"
             end
 
-            # Description: off by default to keep the prompt short, since the
-            # change id and bookmarks already identify the commit (opt in via
-            # tide_jj_show_description; length via tide_jj_description_length)
-            set -l show_desc false
+            # Description (configurable via tide_jj_show_description and
+            # tide_jj_description_length). New installs turn it off through the
+            # configs; it stays on when unset so existing setups don't change.
+            set -l show_desc true
             set -q tide_jj_show_description; and set show_desc $tide_jj_show_description
             set -l desc_length 24
             set -q tide_jj_description_length; and set desc_length $tide_jj_description_length
