@@ -1,4 +1,5 @@
 # RUN: %fish %s
+_tide_test_save_universals
 set -U tide_left_prompt_items status jobs
 set -U tide_right_prompt_items
 set -U tide_prompt_add_newline_before false
@@ -251,4 +252,4 @@ popd
 # CHECK: render-files 1
 command rm -r $slow_bin $node_project
 
-set -e tide_left_prompt_items tide_right_prompt_items tide_prompt_add_newline_before tide_left_prompt_frame_enabled tide_right_prompt_frame_enabled tide_prompt_min_cols tide_status_icon tide_status_icon_failure tide_jobs_icon tide_jobs_number_threshold
+_tide_test_restore_universals
