@@ -156,5 +156,18 @@ printf '#!/bin/sh\ncmd="$*"\ncase "$cmd" in\n  *"workspace list"*) printf "defau
 cd $dir/jj-merge-repo
 _vcs_item # CHECK: (@ xyz999 def999 * desc feature↑3 ↑3)
 
+# -------- jj bookmark truncation --------
+# Long bookmark names (both at @ and on ancestors) are capped at
+# tide_jj_bookmark_length characters, defaulting to 24; 0 disables it.
+mkdir -p $dir/jj-longbm-repo/.jj
+printf '#!/bin/sh\ncmd="$*"\ncase "$cmd" in\n  *"workspace list"*) printf "default\\n" ;;\n  *"log"*) printf "xyz999\\t.\\tuser/this-is-a-very-long-at-bookmark-name\\tdefault\\tdef999\\t*\\tfalse\\tdesc\\nanc123\\tfeature/abc-123-some-very-long-ticket-description\\n" ;;\n  *) exit 0 ;;\nesac\n' >$dir/bin/jj
+cd $dir/jj-longbm-repo
+_vcs_item # CHECK: (@ xyz999 this-is-a-very-long-at-b… def999 * desc feature/abc-123-some-ver…↑1 ↑2)
+set -g tide_jj_bookmark_length 10
+_vcs_item # CHECK: (@ xyz999 this-is-a-… def999 * desc feature/ab…↑1 ↑2)
+set -g tide_jj_bookmark_length 0
+_vcs_item # CHECK: (@ xyz999 this-is-a-very-long-at-bookmark-name def999 * desc feature/abc-123-some-very-long-ticket-description↑1 ↑2)
+set -e tide_jj_bookmark_length
+
 # ------ cleanup ------
 command rm -r $dir
