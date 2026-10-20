@@ -111,10 +111,15 @@ chmod +x $dir/bin/jj
 set -gx PATH $dir/bin $PATH
 
 cd $dir/jj-repo
-_vcs_item # CHECK: (@ abc123 main def456 * desc ↑1)
+# The description is hidden unless tide_jj_show_description is true
+_vcs_item # CHECK: (@ abc123 main def456 * ↑1)
 
 set -g tide_jj_show_description false
 _vcs_item # CHECK: (@ abc123 main def456 * ↑1)
+
+# The remaining jj tests check description rendering, so leave it on
+set -g tide_jj_show_description true
+_vcs_item # CHECK: (@ abc123 main def456 * desc ↑1)
 
 touch .disable-jj-prompt
 _vcs_item # CHECK:
@@ -125,7 +130,6 @@ _vcs_item # CHECK:
 mkdir -p $dir/jj-scrub-repo/.jj
 printf '#!/bin/sh\ncmd="$*"\ncase "$cmd" in\n  *"workspace list"*) printf "default\\n" ;;\n  *"log"*) printf "abc123\\t.\\tbookmark/main\\tdefault\\tdef456\\t*\\tfalse\\tevil\\033[31mdesc\\n" ;;\n  *) exit 0 ;;\nesac\n' >$dir/bin/jj
 cd $dir/jj-scrub-repo
-set -e tide_jj_show_description
 _vcs_item # CHECK: (@ abc123 main def456 * evil[31mdesc ↑1)
 
 # -------- jj bookmark depth: position-based fast path --------
@@ -155,6 +159,8 @@ mkdir -p $dir/jj-merge-repo/.jj
 printf '#!/bin/sh\ncmd="$*"\ncase "$cmd" in\n  *"workspace list"*) printf "default\\n" ;;\n  *"::@ ~"*) printf ".\\n.\\n.\\n" ;;\n  *"log"*) printf "M\\nxyz999\\t.\\t.\\tdefault\\tdef999\\t*\\tfalse\\tdesc\\nanc123\\tfeature\\n\\n" ;;\n  *) exit 0 ;;\nesac\n' >$dir/bin/jj
 cd $dir/jj-merge-repo
 _vcs_item # CHECK: (@ xyz999 def999 * desc feature↑3 ↑3)
+
+set -e tide_jj_show_description
 
 # ------ cleanup ------
 command rm -r $dir
