@@ -109,6 +109,12 @@ if(self.contained_in("::trunk() & ~::@"),
     set -l bm_length 24
     set -q tide_jj_bookmark_length; and set bm_length $tide_jj_bookmark_length
 
+    # In a stack, every bookmarked ancestor down to trunk would otherwise be
+    # listed, so only show the nearest ones (configurable via
+    # tide_jj_ancestor_bookmark_limit; 0 shows them all).
+    set -l ancestor_bm_limit 1
+    set -q tide_jj_ancestor_bookmark_limit; and set ancestor_bm_limit $tide_jj_ancestor_bookmark_limit
+
     set -l info ""
     set -l has_conflict 0
     set -l has_immutable 0
@@ -208,7 +214,12 @@ if(self.contained_in("::trunk() & ~::@"),
 
             set info "$cid_color$parts[1]$reset$at_bookmarks$workspace_label $bold_brblue$parts[5]$reset$conflict_label $status_color$st$reset$divergent_label$desc_label"
         else if test $nparts -eq 2
-            # Ancestor with bookmarks: change_id, bookmarks
+            # Ancestor with bookmarks: change_id, bookmarks. jj lists nearer
+            # ancestors first, so once the limit is hit the rest are skipped
+            # (which also skips their depth lookups below).
+            if test $ancestor_bm_limit -gt 0; and test (count $display_bookmarks) -ge $ancestor_bm_limit
+                continue
+            end
             set -l cid $parts[1]
             set -l depth ""
             if test $has_merge -eq 1
@@ -227,6 +238,9 @@ if(self.contained_in("::trunk() & ~::@"),
             end
             for bookmark in (string split ',' -- $parts[2])
                 set bookmark (string trim -- $bookmark)
+                if test $ancestor_bm_limit -gt 0; and test (count $display_bookmarks) -ge $ancestor_bm_limit
+                    break
+                end
                 if test -n "$bookmark"
                     if test $bm_length -gt 0; and test (string length -- $bookmark) -gt $bm_length
                         set bookmark (string sub -l $bm_length -- $bookmark)"…"

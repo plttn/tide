@@ -169,5 +169,19 @@ set -g tide_jj_bookmark_length 0
 _vcs_item # CHECK: (@ xyz999 this-is-a-very-long-at-bookmark-name def999 * desc feature/abc-123-some-very-long-ticket-description↑1 ↑2)
 set -e tide_jj_bookmark_length
 
+# -------- jj ancestor bookmark limit --------
+# Only the nearest tide_jj_ancestor_bookmark_limit ancestor bookmarks are
+# shown (default 1; 0 shows all). Here @ has a bookmarked parent ("near"),
+# then an unbookmarked commit, then a commit with two bookmarks.
+mkdir -p $dir/jj-stack-repo/.jj
+printf '#!/bin/sh\ncmd="$*"\ncase "$cmd" in\n  *"workspace list"*) printf "default\\n" ;;\n  *"log"*) printf "xyz999\\t.\\t.\\tdefault\\tdef999\\t*\\tfalse\\tdesc\\nanc111\\tnear\\n\\nanc333\\tfar1,far2\\n" ;;\n  *) exit 0 ;;\nesac\n' >$dir/bin/jj
+cd $dir/jj-stack-repo
+_vcs_item # CHECK: (@ xyz999 def999 * desc near↑1 ↑4)
+set -g tide_jj_ancestor_bookmark_limit 2
+_vcs_item # CHECK: (@ xyz999 def999 * desc near↑1 far1↑3 ↑4)
+set -g tide_jj_ancestor_bookmark_limit 0
+_vcs_item # CHECK: (@ xyz999 def999 * desc near↑1 far1↑3 far2↑3 ↑4)
+set -e tide_jj_ancestor_bookmark_limit
+
 # ------ cleanup ------
 command rm -r $dir
