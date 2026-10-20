@@ -24,6 +24,12 @@ e.g. `fix: correct jj branch color` or `feat(vcs)!: unify git/jj into a single i
 
 - Allowed types: `feat`, `fix`, `build`, `chore`, `ci`, `docs`, `style`, `refactor`, `perf`, `test`, `revert`.
 - Add `!` before the `:` (or a `BREAKING CHANGE:` footer) for breaking changes.
+  These should be very rare, since `!` makes release-please bump the major
+  version. Changing how the prompt looks by default is a `feat` with a callout
+  in the PR description, not a breaking change. Where you can, give a new
+  default only to new installs: add it to the configs in
+  `functions/tide/configure/configs/`, and keep the old behavior when the
+  variable is unset, so existing setups don't change on update.
 
 This isn't just style: since PRs are squash-merged, the title becomes the
 commit message on `main`, which [release-please][] reads to generate the
@@ -69,6 +75,8 @@ Primary development tasks will be `fmt`, `lint`, and `test`.
 - `test`
   - Creates a local environment for testing and performs the tests. This will not
     impact your real environment.
+  - Run it as a non-root user: some tests expect `/` to be unwritable, which
+    isn't true as root (e.g. in some containers).
 - `test-clean`
   - Cleans up the test homedir used by `test`.
 
