@@ -41,6 +41,7 @@ tide_java_bg_color normal
 tide_java_color yellow
 tide_jj_bg_color normal
 tide_jj_color brgreen
+tide_jj_show_description false
 tide_jj_fit_width true
 tide_jobs_bg_color normal
 tide_jobs_color green

@@ -1,5 +1,6 @@
 # RUN: %fish %s
 _tide_parent_dirs
+set -l tests_dir (path resolve (status dirname))
 
 function _git
     git $argv >/dev/null 2>&1
@@ -111,10 +112,24 @@ chmod +x $dir/bin/jj
 set -gx PATH $dir/bin $PATH
 
 cd $dir/jj-repo
+# New installs (and `tide configure`) hide the description through the configs
+set -l configs $tests_dir/../functions/tide/configure/configs/*.fish
+for config in $configs
+    string match -q 'tide_jj_show_description false' <$config && echo $config
+end | count
+# CHECK: 6
+
+# A setup from before the option existed has no variable, and keeps showing it
+set -q tide_jj_show_description && set -l saved_show_desc $tide_jj_show_description
+set -e -U tide_jj_show_description
 _vcs_item # CHECK: (@ abc123 main def456 * desc ↑1)
 
 set -g tide_jj_show_description false
 _vcs_item # CHECK: (@ abc123 main def456 * ↑1)
+
+# The remaining jj tests check description rendering, so leave it on
+set -g tide_jj_show_description true
+_vcs_item # CHECK: (@ abc123 main def456 * desc ↑1)
 
 touch .disable-jj-prompt
 _vcs_item # CHECK:
@@ -125,7 +140,6 @@ _vcs_item # CHECK:
 mkdir -p $dir/jj-scrub-repo/.jj
 printf '#!/bin/sh\ncmd="$*"\ncase "$cmd" in\n  *"workspace list"*) printf "default\\n" ;;\n  *"log"*) printf "abc123\\t.\\tbookmark/main\\tdefault\\tdef456\\t*\\tfalse\\tevil\\033[31mdesc\\n" ;;\n  *) exit 0 ;;\nesac\n' >$dir/bin/jj
 cd $dir/jj-scrub-repo
-set -e tide_jj_show_description
 _vcs_item # CHECK: (@ abc123 main def456 * evil[31mdesc ↑1)
 
 # -------- jj bookmark depth: position-based fast path --------
@@ -168,6 +182,9 @@ _vcs_item # CHECK: (@ xyz999 this-is-a-… def999 * desc feature/ab…↑1 ↑2)
 set -g tide_jj_bookmark_length 0
 _vcs_item # CHECK: (@ xyz999 this-is-a-very-long-at-bookmark-name def999 * desc feature/abc-123-some-very-long-ticket-description↑1 ↑2)
 set -e tide_jj_bookmark_length
+
+set -e tide_jj_show_description
+set -q saved_show_desc[1] && set -U tide_jj_show_description $saved_show_desc
 
 # ------ cleanup ------
 command rm -r $dir
