@@ -5,6 +5,7 @@
 # collapse down to `_tide_item_character` only -- dropping the frame's
 # bottom-left connector and whatever else is configured on the prompt's
 # second line -- matching the one-line prompt's existing behavior.
+_tide_test_save_universals
 set -U tide_left_prompt_items newline character
 set -U tide_right_prompt_items
 set -U tide_prompt_add_newline_before false
@@ -61,4 +62,4 @@ echo stderr-lines (count <$stderr_log)
 # CHECK: stderr-lines 0
 command rm -f $stderr_log
 
-set -e tide_left_prompt_items tide_right_prompt_items tide_prompt_add_newline_before tide_left_prompt_frame_enabled tide_right_prompt_frame_enabled tide_prompt_min_cols tide_character_icon tide_character_color tide_character_color_failure tide_prompt_color_frame_and_connection tide_prompt_icon_connection
+_tide_test_restore_universals

@@ -30,6 +30,8 @@ Never run `python3 littlecheck.py` on a test file yourself. Test files set unive
 
 A local run reuses a persistent `HOME` (`$XDG_CACHE_HOME/tide-test-home` or `~/.cache/tide-test-home`) so `fisher`/`clownfish` aren't reinstalled every run; each run still installs the working copy into it. In CI (`GITHUB_ACTIONS=true`) this caching is skipped and everything runs in a clean environment.
 
+Run the suite as a non-root user. `tests/_tide_item_pwd.test.fish` expects `/` to be unwritable (so it gets the unwritable-directory icon), and that check fails as root, e.g. in some containers and sandboxes.
+
 Test files mock external commands (e.g. `node`, `git`) via [clownfish][clownfish]'s `mock` function — see `tests/_tide_item_node.test.fish` for the pattern. `tests/test_setup.fish` defines `_tide_decolor` (strips ANSI codes for assertions) and sets `_tide_side` for right-prompt items.
 
 ### Debugging the async render path
@@ -90,6 +92,7 @@ The git backend minimizes subprocess spawns (currently 3 git invocations) since 
 - Style: prefer `test` over `[ ]`; prefer `&&`/`||` over `and`/`or` for simple conditionals, `if`/`else`/`else if` for anything more complex; prefer piping over command substitution when it doesn't require extra commands.
 - Naming: everything `snake_case`. User-facing names (variables, functions, files) are prefixed `tide_`; internal-only names are prefixed `_tide_`. Items live in `_tide_item_<name>.fish`; subcommands in `_tide_sub_<name>.fish`.
 - PR titles must follow [Conventional Commits][conventional-commits] (`<type>[(scope)][!]: <description>`) — PRs are squash-merged, so the PR title becomes the commit message on `main`, and [release-please][release-please] reads it to generate the changelog. This is CI-enforced.
+- Breaking changes (`!`) should be very rare, since they bump the major version. A new default look is a `feat` with a callout in the PR description. Where possible, give new defaults only to new installs: set them in `functions/tide/configure/configs/` and keep the old behavior when the variable is unset, so updates don't change existing setups.
 - Releases are fully automated by release-please; don't hand-edit `functions/tide.fish`'s version string or the floating `vN`/`vN.M` tags.
 
 [clownfish]: https://github.com/IlanCosman/clownfish
