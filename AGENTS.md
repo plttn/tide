@@ -30,6 +30,8 @@ Never run `python3 littlecheck.py` on a test file yourself. Test files set unive
 
 A local run reuses a persistent `HOME` (`$XDG_CACHE_HOME/tide-test-home` or `~/.cache/tide-test-home`) so `fisher`/`clownfish` aren't reinstalled every run; each run still installs the working copy into it. In CI (`GITHUB_ACTIONS=true`) this caching is skipped and everything runs in a clean environment.
 
+Run the suite as a non-root user. `tests/_tide_item_pwd.test.fish` expects `/` to be unwritable (so it gets the unwritable-directory icon), and that check fails as root, e.g. in some containers and sandboxes.
+
 Test files mock external commands (e.g. `node`, `git`) via [clownfish][clownfish]'s `mock` function — see `tests/_tide_item_node.test.fish` for the pattern. `tests/test_setup.fish` defines `_tide_decolor` (strips ANSI codes for assertions) and sets `_tide_side` for right-prompt items.
 
 ### Debugging the async render path

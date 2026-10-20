@@ -69,6 +69,8 @@ Primary development tasks will be `fmt`, `lint`, and `test`.
 - `test`
   - Creates a local environment for testing and performs the tests. This will not
     impact your real environment.
+  - Run it as a non-root user: some tests expect `/` to be unwritable, which
+    isn't true as root (e.g. in some containers).
 - `test-clean`
   - Cleans up the test homedir used by `test`.
 
