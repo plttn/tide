@@ -104,6 +104,11 @@ if(self.contained_in("::trunk() & ~::@"),
     set -l bold ""
     test "$use_bold" = true; and set bold (printf '\e[1m')
 
+    # Bookmark names are often long ticket slugs, so cap each one's length
+    # (configurable via tide_jj_bookmark_length; 0 disables truncation).
+    set -l bm_length 24
+    set -q tide_jj_bookmark_length; and set bm_length $tide_jj_bookmark_length
+
     set -l info ""
     set -l has_conflict 0
     set -l has_immutable 0
@@ -162,8 +167,12 @@ if(self.contained_in("::trunk() & ~::@"),
                 for bookmark in (string split ',' -- $parts[3])
                     set full_bookmark (string trim -- $bookmark)
                     set bm_components (string split "/" -- $full_bookmark)
-                    if test -n "$bm_components[-1]"
-                        set -a at_bm_list "$bold_brmagenta$bm_components[-1]$reset"
+                    set -l at_bm $bm_components[-1]
+                    if test -n "$at_bm"
+                        if test $bm_length -gt 0; and test (string length -- $at_bm) -gt $bm_length
+                            set at_bm (string sub -l $bm_length -- $at_bm)"…"
+                        end
+                        set -a at_bm_list "$bold_brmagenta$at_bm$reset"
                     end
                 end
                 if test (count $at_bm_list) -gt 0
@@ -221,6 +230,9 @@ if(self.contained_in("::trunk() & ~::@"),
             for bookmark in (string split ',' -- $parts[2])
                 set bookmark (string trim -- $bookmark)
                 if test -n "$bookmark"
+                    if test $bm_length -gt 0; and test (string length -- $bookmark) -gt $bm_length
+                        set bookmark (string sub -l $bm_length -- $bookmark)"…"
+                    end
                     set -l nobold (printf '\e[22m')
                     if test -n "$depth"
                         set -a display_bookmarks "$magenta$bookmark$nobold$magenta↑$depth$reset$bold"
