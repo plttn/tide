@@ -194,6 +194,9 @@ set -g tide_jj_ancestor_bookmark_limit 2
 _vcs_item # CHECK: (@ xyz999 def999 * desc near↑1 far1↑3 ↑4)
 set -g tide_jj_ancestor_bookmark_limit 0
 _vcs_item # CHECK: (@ xyz999 def999 * desc near↑1 far1↑3 far2↑3 ↑4)
+# A value that isn't a whole number is ignored rather than erroring
+set -g tide_jj_ancestor_bookmark_limit abc
+_vcs_item # CHECK: (@ xyz999 def999 * desc near↑1 far1↑3 far2↑3 ↑4)
 set -e tide_jj_ancestor_bookmark_limit
 set -q saved_bm_limit[1] && set -U tide_jj_ancestor_bookmark_limit $saved_bm_limit
 

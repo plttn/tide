@@ -114,7 +114,7 @@ if(self.contained_in("::trunk() & ~::@"),
     # installs get 1 through the configs; unset (or 0) shows them all, so
     # existing setups don't change.
     set -l ancestor_bm_limit 0
-    set -q tide_jj_ancestor_bookmark_limit; and set ancestor_bm_limit $tide_jj_ancestor_bookmark_limit
+    string match -qr '^\d+$' -- "$tide_jj_ancestor_bookmark_limit" && set ancestor_bm_limit $tide_jj_ancestor_bookmark_limit
 
     set -l info ""
     set -l has_conflict 0
