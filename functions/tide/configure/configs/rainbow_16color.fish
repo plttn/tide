@@ -43,6 +43,7 @@ tide_jobs_bg_color brblack
 tide_jobs_color green
 tide_jj_bg_color green
 tide_jj_color black
+tide_jj_ancestor_bookmark_limit 1
 tide_kubectl_bg_color blue
 tide_kubectl_color black
 tide_nix_shell_bg_color brblue

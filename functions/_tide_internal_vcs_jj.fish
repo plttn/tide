@@ -109,10 +109,11 @@ if(self.contained_in("::trunk() & ~::@"),
     set -l bm_length 24
     set -q tide_jj_bookmark_length; and set bm_length $tide_jj_bookmark_length
 
-    # In a stack, every bookmarked ancestor down to trunk would otherwise be
-    # listed, so only show the nearest ones (configurable via
-    # tide_jj_ancestor_bookmark_limit; 0 shows them all).
-    set -l ancestor_bm_limit 1
+    # In a stack, every bookmarked ancestor down to trunk is listed, so
+    # tide_jj_ancestor_bookmark_limit can cap it to the nearest ones. New
+    # installs get 1 through the configs; unset (or 0) shows them all, so
+    # existing setups don't change.
+    set -l ancestor_bm_limit 0
     set -q tide_jj_ancestor_bookmark_limit; and set ancestor_bm_limit $tide_jj_ancestor_bookmark_limit
 
     set -l info ""
