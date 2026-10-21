@@ -35,6 +35,19 @@ if string match -i homebrew/Cellar $fish_path
     set fish_path (string replace -r '/Cellar/[^/]+/[^/]+/bin/' '/bin/' $fish_path)
 end
 
+# The item check above reused an earlier answer instead of looking every tool
+# up again, which can take over a second where PATH is slow. Check again in
+# the background, so a tool installed or removed since then still shows up
+# (or disappears) by a later prompt.
+if set -q _tide_unusable_items_reused
+    # PATH is set before the function loads, so its PATH handler doesn't fire.
+    # Joined into one string: a bare list here would expand the whole command
+    # once per PATH entry, leaving the job with only the first one.
+    set -l path_args (string escape -- $PATH | string join ' ')
+    $fish_path -c "set -gx PATH $path_args; _tide_remove_unusable_items --refresh" </dev/null >/dev/null 2>&1 &
+    builtin disown
+end
+
 # Stores a finished render for drawing. A last line starting with \x1f holds
 # the versions of the jj segment its placeholder can be filled with (see
 # _tide_1_line_prompt), so it's moved into $_tide_jj_variants instead.
