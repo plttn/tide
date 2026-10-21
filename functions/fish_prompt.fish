@@ -40,8 +40,11 @@ end
 # the background, so a tool installed or removed since then still shows up
 # (or disappears) by a later prompt.
 if set -q _tide_unusable_items_reused
-    # PATH is set before the function loads, so its PATH handler doesn't fire
-    $fish_path -c "set -gx PATH "(string escape -- $PATH)"; _tide_remove_unusable_items --refresh" </dev/null >/dev/null 2>&1 &
+    # PATH is set before the function loads, so its PATH handler doesn't fire.
+    # Joined into one string: a bare list here would expand the whole command
+    # once per PATH entry, leaving the job with only the first one.
+    set -l path_args (string escape -- $PATH | string join ' ')
+    $fish_path -c "set -gx PATH $path_args; _tide_remove_unusable_items --refresh" </dev/null >/dev/null 2>&1 &
     builtin disown
 end
 

@@ -45,6 +45,26 @@ _tide_remove_unusable_items
 _items items-changed
 # CHECK: items-changed: node pwd
 
+# A new shell reuses the answer and re-checks in the background. That check
+# has to see the whole PATH (several directories here, including the system
+# ones the shell needs): one that saw only part of it stored an answer for
+# that PATH instead, so the next shell redid the full check, and every other
+# shell after that.
+set -gx PATH $bin /usr/bin /bin
+_tide_remove_unusable_items
+set -l fish_bin (status fish-path)
+for shell in first second
+    $fish_bin -i -c "fish_prompt >/dev/null; set -q _tide_unusable_items_reused && echo $shell shell: reused" </dev/null
+    # Wait for that background check (PATH has no seq here, hence the counter)
+    set -l tries 0
+    while test $tries -lt 50 && /usr/bin/pgrep -f '_tide_remove_unusable_items --refresh' >/dev/null
+        /bin/sleep 0.1
+        set tries (math $tries + 1)
+    end
+end
+# CHECK: first shell: reused
+# CHECK: second shell: reused
+
 set -gx PATH $saved_path
 command rm -r $bin
 functions -e _items
