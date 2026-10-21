@@ -20,6 +20,10 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - uses: fish-shop/install-fish-shell@e83b4f8c7c4d80c3b65ee0eb5d0e3bf4816536ee # v2
+        if: runner.os == 'macOS'
+      # Not the PPA build install-fish-shell uses on Linux; see the action
+      - uses: ./.github/actions/install-fish-linux
+        if: runner.os == 'Linux'
       - uses: fish-shop/install-plugin-manager@3a4a1f1aff085f23d3817468a042acc1e6471f59 # v2
         with:
           plugin-manager: fisher
@@ -30,14 +34,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-      - uses: fish-shop/install-fish-shell@e83b4f8c7c4d80c3b65ee0eb5d0e3bf4816536ee # v2
+      - uses: ./.github/actions/install-fish-linux
       - uses: fish-shop/syntax-check@3d500356d24bce50fab4e335245f224918929284 # v2
 
   format-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-      - uses: fish-shop/install-fish-shell@e83b4f8c7c4d80c3b65ee0eb5d0e3bf4816536ee # v2
+      - uses: ./.github/actions/install-fish-linux
       - uses: fish-shop/indent-check@ee3ad08117b99aa5e41e706ace13ffd4f8c22412 # v2
 
   actionlint:
