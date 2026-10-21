@@ -11,10 +11,11 @@ function _tide_fit_jj -a reserved left right
     end
 
     # The directory's untruncated width, from _tide_pwd itself so its icons
-    # and markers are counted the same way
+    # are counted the same way. Measuring only skips its marker checks, which
+    # don't change the width but do touch the disk for every directory.
     set -l pwd_len 0
     if string match -q '*@PWD@*' -- "$left$right"
-        dist_btwn_sides=1000000 _tide_pwd >/dev/null
+        _tide_pwd_measure_only=1 _tide_pwd >/dev/null
         set pwd_len $_tide_pwd_len
     end
 
