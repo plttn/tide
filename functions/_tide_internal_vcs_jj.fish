@@ -118,6 +118,11 @@ if(self.contained_in("::trunk() & ~::@"),
     set -l ancestor_bm_limit 0
     string match -qr '^\d+$' -- "$tide_jj_ancestor_bookmark_limit" && set ancestor_bm_limit $tide_jj_ancestor_bookmark_limit
 
+    # jj keeps an empty, undescribed @ on top of your work as scratch space.
+    # Counting it would make a clean checkout of trunk read ↑1, so such an @
+    # is left out of ↑ and of ancestor bookmark depths.
+    set -l skipped_wc 0
+
     set -l info ""
     set -l has_conflict 0
     set -l has_immutable 0
@@ -167,6 +172,10 @@ if(self.contained_in("::trunk() & ~::@"),
             end
             if test "$parts[7]" = true
                 set has_immutable 1
+            end
+            if test "$st" = "(empty)"; and test "$parts[8]" = "(no desc)"
+                set skipped_wc 1
+                set ahead (math $ahead - 1)
             end
 
             # Bookmarks at @
@@ -250,11 +259,14 @@ if(self.contained_in("::trunk() & ~::@"),
                     set ancestor_depth_forks (math $ancestor_depth_forks + 1)
                     set -l depth_commits (jj log --no-pager --no-graph --ignore-working-copy --color=never \
                         -r "$cid::@ ~ $cid" -T '".\n"' 2>/dev/null)
-                    set depth (count $depth_commits)
+                    set depth (math (count $depth_commits) - $skipped_wc)
                 end
             else
+                # $ahead already leaves out a skipped @
                 set depth (math $ahead - 1)
             end
+            # A bookmark right below a skipped @ is where you are, so no suffix
+            test "$depth" = 0 && set depth ""
             for bookmark in (string split ',' -- $parts[2])
                 set bookmark (string trim -- $bookmark)
                 if test $ancestor_bm_limit -gt 0; and test (count $display_bookmarks) -ge $ancestor_bm_limit
