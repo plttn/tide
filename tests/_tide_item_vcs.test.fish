@@ -189,6 +189,36 @@ set -g tide_jj_bookmark_length
 _vcs_item # CHECK: (@ xyz999 this-is-a-very-long-at-b… def999 * desc feature/abc-123-some-ver…↑1 ↑2)
 set -e tide_jj_bookmark_length
 
+# -------- jj ancestor bookmark limit --------
+# Only the nearest tide_jj_ancestor_bookmark_limit ancestor bookmarks are
+# shown (unset or 0 shows all; new installs get 1 through the configs). Here
+# @ has a bookmarked parent ("near"), then an unbookmarked commit, then a
+# commit with two bookmarks.
+set -l configs $tests_dir/../functions/tide/configure/configs/*.fish
+for config in $configs
+    string match -q 'tide_jj_ancestor_bookmark_limit 1' <$config && echo $config
+end | count
+# CHECK: 6
+
+mkdir -p $dir/jj-stack-repo/.jj
+printf '#!/bin/sh\ncmd="$*"\ncase "$cmd" in\n  *"workspace list"*) printf "default\\n" ;;\n  *"log"*) printf "xyz999\\t.\\t.\\tdefault\\tdef999\\t*\\tfalse\\tdesc\\nanc111\\tnear\\n\\nanc333\\tfar1,far2\\n" ;;\n  *) exit 0 ;;\nesac\n' >$dir/bin/jj
+cd $dir/jj-stack-repo
+# A setup from before the option existed has no variable, and keeps them all
+set -q tide_jj_ancestor_bookmark_limit && set -l saved_bm_limit $tide_jj_ancestor_bookmark_limit
+set -e -U tide_jj_ancestor_bookmark_limit
+_vcs_item # CHECK: (@ xyz999 def999 * desc near↑1 far1↑3 far2↑3 ↑4)
+set -g tide_jj_ancestor_bookmark_limit 1
+_vcs_item # CHECK: (@ xyz999 def999 * desc near↑1 ↑4)
+set -g tide_jj_ancestor_bookmark_limit 2
+_vcs_item # CHECK: (@ xyz999 def999 * desc near↑1 far1↑3 ↑4)
+set -g tide_jj_ancestor_bookmark_limit 0
+_vcs_item # CHECK: (@ xyz999 def999 * desc near↑1 far1↑3 far2↑3 ↑4)
+# A value that isn't a whole number is ignored rather than erroring
+set -g tide_jj_ancestor_bookmark_limit abc
+_vcs_item # CHECK: (@ xyz999 def999 * desc near↑1 far1↑3 far2↑3 ↑4)
+set -e tide_jj_ancestor_bookmark_limit
+set -q saved_bm_limit[1] && set -U tide_jj_ancestor_bookmark_limit $saved_bm_limit
+
 set -g tide_jj_description_length abc
 set -g tide_jj_show_description true
 mkdir -p $dir/jj-longdesc-repo/.jj
