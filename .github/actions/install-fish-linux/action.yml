@@ -4,12 +4,14 @@ description: >-
   Installs fish's standalone Linux build from its GitHub release, as
   /usr/bin/fish plus a /usr/bin/fish_indent link to the same binary.
 
-  fish-shop/install-fish-shell installs from the Launchpad PPA on Linux,
-  which is used instead because the PPA's fish 4.9.3 build can't load any
-  terminal definition on the runner (every interactive test shell printed
-  "Could not set up terminal" warnings that the tests count as stray
-  output), and the PPA has been returning 503s. /usr/bin is where
-  fish-shop/install-plugin-manager expects fish.
+  Used instead of fish-shop/install-fish-shell, which installs from the
+  Launchpad PPA on Linux. When the PPA is down (it returns 503s at times),
+  `apt-get update` only warns and `apt-get install fish` silently installs
+  Ubuntu's own, much older fish instead. That one prints "Could not set up
+  terminal" warnings on the runner, which the prompt tests count as stray
+  output. GitHub release downloads don't depend on Launchpad, and the
+  version is pinned. /usr/bin is where fish-shop/install-plugin-manager
+  expects fish.
 
 inputs:
   version:
