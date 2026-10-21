@@ -107,7 +107,16 @@ if(self.contained_in("::trunk() & ~::@"),
     # Bookmark names are often long ticket slugs, so cap each one's length
     # (configurable via tide_jj_bookmark_length; 0 disables truncation).
     set -l bm_length 24
-    set -q tide_jj_bookmark_length; and set bm_length $tide_jj_bookmark_length
+    # Only a whole number counts, so a typo falls back to the default
+    # instead of erroring from the background render.
+    string match -qr '^\d+$' -- "$tide_jj_bookmark_length" && set bm_length $tide_jj_bookmark_length
+
+    # In a stack, every bookmarked ancestor down to trunk is listed, so
+    # tide_jj_ancestor_bookmark_limit can cap it to the nearest ones. New
+    # installs get 1 through the configs; unset (or 0) shows them all, so
+    # existing setups don't change.
+    set -l ancestor_bm_limit 0
+    string match -qr '^\d+$' -- "$tide_jj_ancestor_bookmark_limit" && set ancestor_bm_limit $tide_jj_ancestor_bookmark_limit
 
     set -l info ""
     set -l has_conflict 0
@@ -201,7 +210,7 @@ if(self.contained_in("::trunk() & ~::@"),
             set -l show_desc true
             set -q tide_jj_show_description; and set show_desc $tide_jj_show_description
             set -l desc_length 24
-            set -q tide_jj_description_length; and set desc_length $tide_jj_description_length
+            string match -qr '^\d+$' -- "$tide_jj_description_length" && set desc_length $tide_jj_description_length
             set -l desc_label ""
             if test -n "$parts[8]"; and test "$show_desc" = true
                 set -l desc $parts[8]
@@ -224,7 +233,12 @@ if(self.contained_in("::trunk() & ~::@"),
             set -f at_desc $desc_label
             set info 1
         else if test $nparts -eq 2
-            # Ancestor with bookmarks: change_id, bookmarks
+            # Ancestor with bookmarks: change_id, bookmarks. jj lists nearer
+            # ancestors first, so once the limit is hit the rest are skipped
+            # (which also skips their depth lookups below).
+            if test $ancestor_bm_limit -gt 0; and test (count $display_bookmarks) -ge $ancestor_bm_limit
+                continue
+            end
             set -l cid $parts[1]
             set -l depth ""
             if test $has_merge -eq 1
@@ -243,6 +257,9 @@ if(self.contained_in("::trunk() & ~::@"),
             end
             for bookmark in (string split ',' -- $parts[2])
                 set bookmark (string trim -- $bookmark)
+                if test $ancestor_bm_limit -gt 0; and test (count $display_bookmarks) -ge $ancestor_bm_limit
+                    break
+                end
                 if test -n "$bookmark"
                     if test $bm_length -gt 0; and test (string length -- $bookmark) -gt $bm_length
                         set bookmark (string sub -l $bm_length -- $bookmark)"…"
