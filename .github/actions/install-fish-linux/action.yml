@@ -1,0 +1,29 @@
+---
+name: Install fish (Linux)
+description: >-
+  Installs fish's standalone Linux build from its GitHub release, as
+  /usr/bin/fish plus a /usr/bin/fish_indent link to the same binary.
+
+  fish-shop/install-fish-shell installs from the Launchpad PPA on Linux,
+  which is used instead because the PPA's fish 4.9.3 build can't load any
+  terminal definition on the runner (every interactive test shell printed
+  "Could not set up terminal" warnings that the tests count as stray
+  output), and the PPA has been returning 503s. /usr/bin is where
+  fish-shop/install-plugin-manager expects fish.
+
+inputs:
+  version:
+    description: fish release to install
+    default: 4.9.3
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        FISH_VERSION: ${{ inputs.version }}
+      run: |
+        curl -fsSL --retry 3 "https://github.com/fish-shell/fish-shell/releases/download/$FISH_VERSION/fish-$FISH_VERSION-linux-x86_64.tar.xz" |
+          sudo tar -xJ --no-same-owner -C /usr/bin fish
+        sudo ln -sf fish /usr/bin/fish_indent
+        fish --version
