@@ -35,6 +35,18 @@ if string match -i homebrew/Cellar $fish_path
     set fish_path (string replace -r '/Cellar/[^/]+/[^/]+/bin/' '/bin/' $fish_path)
 end
 
+# Stores a finished render for drawing. A last line starting with \x1f holds
+# the versions of the jj segment its placeholder can be filled with (see
+# _tide_1_line_prompt), so it's moved into $_tide_jj_variants instead.
+function _tide_store_render --inherit-variable prompt_var
+    set -g _tide_jj_variants
+    if string match -q \x1f'*' -- "$argv[-1]"
+        set _tide_jj_variants (string split -n \x1f -- $argv[-1])
+        set -e argv[-1]
+    end
+    set -g $prompt_var $argv
+end
+
 # _tide_repaint prevents us from creating a second background job
 function _tide_refresh_prompt --on-signal SIGUSR1 --inherit-variable prompt_var
     # Every job publishes under its own pid (see _tide_dispatch_render), so
@@ -57,7 +69,7 @@ function _tide_refresh_prompt --on-signal SIGUSR1 --inherit-variable prompt_var
     # Marks this job as finished even if a tmp cleaner later deletes its file,
     # so it's never mistaken for one still running (see _tide_dispatch_render).
     set -g _tide_done_pid $_tide_last_pid
-    set -g $prompt_var $rendered
+    _tide_store_render $rendered
     set -g _tide_repaint $_tide_cycle
     commandline -f repaint
 end
@@ -88,7 +100,7 @@ function _tide_dispatch_render --inherit-variable prompt_var --inherit-variable 
     jobs -q && jobs -p | count | read -lx _tide_jobs
 
     if test "$_tide_signal_unavailable" = true
-        set -g $prompt_var ($argv[1])
+        _tide_store_render ($argv[1])
         return
     end
 
@@ -179,6 +191,8 @@ if contains newline $_tide_left_items # two line prompt initialization
         set -l top_right_frame "$prompt_and_frame_color─╮" &&
         set -l bot_right_frame "$prompt_and_frame_color─╯" &&
         set column_offset (math $column_offset-2)
+    # Columns the top line keeps for the frames, for _tide_fit_jj
+    math 5 - $column_offset | read -l fit_reserved
 
     eval "
 function fish_prompt
@@ -192,9 +206,11 @@ function fish_prompt
 
 
     if not contains -- --final-rendering \$argv
-        math \$COLUMNS-(string length -V \"\$$prompt_var[1][1]\$$prompt_var[1][3]\")+$column_offset | read -lx dist_btwn_sides
+        set -l top_left \"\$$prompt_var[1][1]\"
+        set -q _tide_jj_variants[1] && set top_left (_tide_fit_jj $fit_reserved \"\$top_left\" \"\$$prompt_var[1][3]\" \$_tide_jj_variants)
+        math \$COLUMNS-(string length -V \"\$top_left\$$prompt_var[1][3]\")+$column_offset | read -lx dist_btwn_sides
 
-        echo -n $add_newline'$top_left_frame'(string replace @PWD@ (_tide_pwd) \"\$$prompt_var[1][1]\")'$prompt_and_frame_color'
+        echo -n $add_newline'$top_left_frame'(string replace @PWD@ (_tide_pwd) \"\$top_left\")'$prompt_and_frame_color'
         string repeat -Nm(math max 0, \$dist_btwn_sides-\$_tide_pwd_len) '$tide_prompt_icon_connection'
 
         echo \"\$$prompt_var[1][3]$top_right_frame\"
@@ -233,8 +249,10 @@ function fish_prompt
         add_prefix= _tide_item_character
         echo -n '$color_normal '
     else
-        math \$COLUMNS-(string length -V \"\$$prompt_var[1][1]\$$prompt_var[1][2]\")$column_offset | read -lx dist_btwn_sides
-        printf '%s' (string replace @PWD@ (_tide_pwd) $add_newline \$$prompt_var[1][1]'$color_normal ')
+        set -l top_left \$$prompt_var[1][1]
+        set -q _tide_jj_variants[1] && set top_left (_tide_fit_jj $tide_prompt_min_cols \"\$top_left\" \"\$$prompt_var[1][2]\" \$_tide_jj_variants)
+        math \$COLUMNS-(string length -V \"\$top_left\$$prompt_var[1][2]\")$column_offset | read -lx dist_btwn_sides
+        printf '%s' (string replace @PWD@ (_tide_pwd) $add_newline \$top_left'$color_normal ')
     end
 end
 

@@ -43,6 +43,7 @@ tide_jj_bg_color normal
 tide_jj_color brgreen
 tide_jj_show_description false
 tide_jj_ancestor_bookmark_limit 1
+tide_jj_fit_width true
 tide_jobs_bg_color normal
 tide_jobs_color green
 tide_kubectl_bg_color normal

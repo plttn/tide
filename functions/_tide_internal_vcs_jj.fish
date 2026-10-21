@@ -171,8 +171,10 @@ if(self.contained_in("::trunk() & ~::@"),
 
             # Bookmarks at @
             set -l at_bookmarks ""
+            set -l at_bookmarks_short ""
             if test "$parts[3]" != "."
                 set -l at_bm_list
+                set -l at_bm_short_list
                 for bookmark in (string split ',' -- $parts[3])
                     set full_bookmark (string trim -- $bookmark)
                     set bm_components (string split "/" -- $full_bookmark)
@@ -182,10 +184,15 @@ if(self.contained_in("::trunk() & ~::@"),
                             set at_bm (string sub -l $bm_length -- $at_bm)"…"
                         end
                         set -a at_bm_list "$bold_brmagenta$at_bm$reset"
+                        # A shorter cut, used only when the prompt runs out of room
+                        set -l at_bm_short $bm_components[-1]
+                        test (string length -- $at_bm_short) -gt 12 && set at_bm_short (string sub -l 12 -- $at_bm_short)"…"
+                        set -a at_bm_short_list "$bold_brmagenta$at_bm_short$reset"
                     end
                 end
                 if test (count $at_bm_list) -gt 0
                     set at_bookmarks " "(string join ' ' $at_bm_list)
+                    set at_bookmarks_short " "(string join ' ' $at_bm_short_list)
                 end
             end
 
@@ -217,7 +224,14 @@ if(self.contained_in("::trunk() & ~::@"),
                 end
             end
 
-            set info "$cid_color$parts[1]$reset$at_bookmarks$workspace_label $bold_brblue$parts[5]$reset$conflict_label $status_color$st$reset$divergent_label$desc_label"
+            # Kept as separate pieces so shorter versions can drop some of them
+            set -f at_cid "$cid_color$parts[1]$reset"
+            set -f at_bm_full "$at_bookmarks$workspace_label"
+            set -f at_bm_short "$at_bookmarks_short$workspace_label"
+            set -f at_commit " $bold_brblue$parts[5]$reset"
+            set -f at_flags "$conflict_label $status_color$st$reset$divergent_label"
+            set -f at_desc $desc_label
+            set info 1
         else if test $nparts -eq 2
             # Ancestor with bookmarks: change_id, bookmarks. jj lists nearer
             # ancestors first, so once the limit is hit the rest are skipped
@@ -263,16 +277,19 @@ if(self.contained_in("::trunk() & ~::@"),
     end
 
     # Assemble prompt
+    set -l variants
     if test -n "$info"
+        set -l ancestors ""
         if test (count $display_bookmarks) -gt 0
-            set info "$info "(string join ' ' $display_bookmarks)
+            set ancestors " "(string join ' ' $display_bookmarks)
         end
+        set -l counts ""
         set -l nobold (printf '\e[22m')
         if test $ahead -gt 0
-            set info "$info $nobold$gray↑$ahead$reset"
+            set counts "$counts $nobold$gray↑$ahead$reset"
         end
         if test $behind -gt 0
-            set info "$info $nobold$gray↓$behind$reset"
+            set counts "$counts $nobold$gray↓$behind$reset"
         end
         set -l at_color (set_color green)
         if test $has_conflict -eq 1
@@ -281,11 +298,36 @@ if(self.contained_in("::trunk() & ~::@"),
             set at_color (printf '\e[38;5;14m')
         end
         set -l parentheses_color (set_color $tide_jj_color)
-        if test $tide_jj_bg_color = normal # prints as normal
-            set jj_status $( printf '\e[39m%s(%s%s%s%s%s)' "$parentheses_color" "$reset$bold" "$at_color" @ "$reset $info" "$full_reset$parentheses_color" )
-        else # prints with bg support
-            set jj_status (printf '(%s%s)' @ " $info")
+
+        # The full segment first, then shorter versions, each dropping one more
+        # optional field: description, ancestor bookmarks, commit id, then a
+        # shorter cut of the bookmark at @, and last only the change id, status
+        # and ahead/behind counts.
+        for body in "$at_bm_full$at_commit$at_flags$at_desc$ancestors" \
+            "$at_bm_full$at_commit$at_flags$ancestors" \
+            "$at_bm_full$at_commit$at_flags" \
+            "$at_bm_full$at_flags" \
+            "$at_bm_short$at_flags" \
+            "$at_flags"
+            set -l info "$at_cid$body$counts"
+            set -l variant
+            if test $tide_jj_bg_color = normal # prints as normal
+                set variant $( printf '\e[39m%s(%s%s%s%s%s)' "$parentheses_color" "$reset$bold" "$at_color" @ "$reset $info" "$full_reset$parentheses_color" )
+            else # prints with bg support
+                set variant (printf '(%s%s)' @ " $info")
+            end
+            contains -- "$variant" $variants || set -a variants "$variant"
         end
+        set jj_status $variants[1]
+    end
+
+    # Where the line prompt allows it (the top line, left side), leave a
+    # placeholder and hand over every version: the shell fills in the widest
+    # one that still leaves the directory its full width when it draws the
+    # prompt (see _tide_fit_jj), so it also adapts on resize.
+    if test "$tide_jj_fit_width" = true; and test "$_tide_jj_fit_slot" = true; and set -q variants[2]
+        set -g _tide_jj_render_variants $variants
+        set jj_status @JJ@
     end
 
     _tide_print_item jj $tide_jj_icon' ' (echo -ns "$jj_status";)

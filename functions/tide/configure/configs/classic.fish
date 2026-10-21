@@ -50,6 +50,7 @@ tide_jj_color $_tide_color_green
 tide_jj_bg_color 444444
 tide_jj_show_description false
 tide_jj_ancestor_bookmark_limit 1
+tide_jj_fit_width true
 tide_jobs_bg_color 444444
 tide_jobs_color $_tide_color_dark_green
 tide_jobs_number_threshold 1000
