@@ -51,10 +51,15 @@ _items items-changed
 # that PATH instead, so the next shell redid the full check, and every other
 # shell after that.
 set -gx PATH $bin /usr/bin /bin
-_tide_remove_unusable_items
 set -l fish_bin (status fish-path)
-for shell in first second
-    $fish_bin -i -c "fish_prompt >/dev/null; set -q _tide_unusable_items_reused && echo $shell shell: reused" </dev/null
+# The warm-up shell stores the answer for the PATH new shells end up with,
+# which can differ from this one's (e.g. CI adds to it)
+for shell in warm-up first second
+    if test $shell = warm-up
+        $fish_bin -i -c "fish_prompt >/dev/null" </dev/null
+    else
+        $fish_bin -i -c "fish_prompt >/dev/null; set -q _tide_unusable_items_reused && echo $shell shell: reused" </dev/null
+    end
     # Wait for that background check (PATH has no seq here, hence the counter)
     set -l tries 0
     while test $tries -lt 50 && /usr/bin/pgrep -f '_tide_remove_unusable_items --refresh' >/dev/null
