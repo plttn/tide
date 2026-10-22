@@ -51,7 +51,7 @@ Run `tide configure` to open the wizard in your terminal.
 
 ### Flexible
 
-Using the [`items`][] list for each side of the prompt, you have full control of which and where prompt sections display.
+Using the [`items`][] list for each side of the prompt, you have full control of which and where prompt sections display. Run `tide items` to pick them interactively, with a live preview.
 
 <br clear="right">
 
