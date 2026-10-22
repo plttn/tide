@@ -16,44 +16,55 @@ function _edit -a keys
     echo $status: $fake_tide_left_prompt_items '|' $fake_tide_right_prompt_items
 end
 
-# Columns are Left, Hidden, Right; lowercase keys move the cursor and
-# uppercase keys move the item under it. Hidden is alphabetical (aws first).
-_edit lLy
+# Columns are Left, Hidden, Right. h/j/k/l move the cursor, Space grabs the
+# item under it so h/j/k/l move the item, and Space drops it. Hidden is
+# alphabetical (aws first).
+_edit ljy
+# CHECK: 0: pwd vcs newline character | status node
+_edit 'l l y'
 # CHECK: 0: pwd vcs newline character | status node aws
 # New left items go before character, which stays last
-_edit lHy
+_edit 'l h y'
 # CHECK: 0: pwd vcs newline aws character | status node
-_edit LHy
+_edit ' lh y'
 # CHECK: 0: vcs newline pwd character | status node
 
+# Enter grabs and drops too
+_edit l\nl\ny
+# CHECK: 0: pwd vcs newline character | status node aws
+
+# Hidden keeps its own order
+_edit 'l j y'
+# CHECK: 0: pwd vcs newline character | status node
+
 # Reorder within a side
-_edit llJy
+_edit 'll j y'
 # CHECK: 0: pwd vcs newline character | node status
-_edit jJy
+_edit 'j j y'
 # CHECK: 0: pwd newline vcs character | status node
 
 # character stays last on the left, and can't move up
-_edit jjJy
+_edit 'jj j y'
 # CHECK: 0: pwd vcs newline character | status node
-_edit jjjKy
+_edit 'jjj k y'
 # CHECK: 0: pwd vcs newline character | status node
 
 # newline and character only work on the left
-_edit jjjLLy
+_edit 'jjj ll y'
 # CHECK: 0: pwd vcs newline | status node
-_edit jjLLy
+_edit 'jj ll y'
 # CHECK: 0: pwd vcs character | status node
 
 # Moving character back in puts it last again
-_edit jjjLHy
+_edit 'jjj lh y'
 # CHECK: 0: pwd vcs newline character | status node
 
 # r resets, and q (or running out of input) cancels
-_edit lLry
+_edit 'l l ry'
 # CHECK: 0: pwd vcs newline character | status node
-_edit lLq
+_edit 'l l q'
 # CHECK: 1: pwd vcs newline character | status node
-_edit lL
+_edit 'l l'
 # CHECK: 1: pwd vcs newline character | status node
 
 # Every item is offered, pwd and newline included
@@ -83,7 +94,7 @@ set -l right_before $tide_right_prompt_items
 set -l first_hidden (for item in pwd newline (functions --all | string replace -rf '^_tide_item_(.+)$' '$1')
         contains $item $tide_left_prompt_items $tide_right_prompt_items || echo $item
     end | path sort -u)[1]
-printf lLy | COLUMNS=80 LINES=30 tide items >/dev/null
+printf 'l l y' | COLUMNS=80 LINES=30 tide items >/dev/null
 test "$tide_right_prompt_items" = "$right_before $first_hidden" && echo saved
 # CHECK: saved
 set --names | string match -r '^fake_' | count

@@ -3,8 +3,9 @@
 # place, with a live preview. Returns 0 to keep the edit and 1 to cancel it
 # (the lists are then put back as they were).
 #
-# Three columns, in prompt order: Left, Hidden, Right. Lowercase keys move the
-# cursor and uppercase keys move the item under it.
+# Three columns, in prompt order: Left, Hidden, Right. h/j/k/l move the
+# cursor; Space (or Enter) grabs the item under it, after which h/j/k/l move
+# the item instead, until Space drops it.
 function _tide_items_editor
     set -l saved_left $fake_tide_left_prompt_items
     set -l saved_right $fake_tide_right_prompt_items
@@ -17,6 +18,7 @@ function _tide_items_editor
     set -g _tide_items_top 1
     set -g _tide_items_message
     set -g _tide_items_preview_all
+    set -e _tide_items_grabbed
 
     set -l result 1
     while true
@@ -24,23 +26,29 @@ function _tide_items_editor
         read --nchars 1 --prompt-str "$(set_color -o)Key: $(set_color normal)" key || break
         set _tide_items_message
         switch $key
-            case j
-                _tide_items_cursor_move 1
-            case k
-                _tide_items_cursor_move -1
-            case h
-                _tide_items_cursor_column -1
-            case l
-                _tide_items_cursor_column 1
-            case J
-                _tide_items_reorder 1
-            case K
-                _tide_items_reorder -1
-            case H
-                _tide_items_shift -1
-            case L
-                _tide_items_shift 1
+            case ' ' '' # Space, or Enter
+                set -l items (_tide_items_column $_tide_items_col)
+                if set -q _tide_items_grabbed
+                    set -e _tide_items_grabbed
+                else if set -q items[$_tide_items_row]
+                    set -g _tide_items_grabbed
+                end
+            case j k h l
+                set -l step 1
+                contains $key k h && set step -1
+                if not set -q _tide_items_grabbed
+                    if contains $key j k
+                        _tide_items_cursor_move $step
+                    else
+                        _tide_items_cursor_column $step
+                    end
+                else if contains $key j k
+                    _tide_items_reorder $step
+                else
+                    _tide_items_shift $step
+                end
             case r
+                set -e _tide_items_grabbed
                 set fake_tide_left_prompt_items $saved_left
                 set fake_tide_right_prompt_items $saved_right
                 _tide_items_cursor_move 0
@@ -56,7 +64,7 @@ function _tide_items_editor
         set fake_tide_left_prompt_items $saved_left
         set fake_tide_right_prompt_items $saved_right
     end
-    set -e _tide_items_all _tide_items_col _tide_items_row _tide_items_top _tide_items_message _tide_items_preview_all
+    set -e _tide_items_all _tide_items_col _tide_items_row _tide_items_top _tide_items_message _tide_items_preview_all _tide_items_grabbed
     return $result
 end
 
@@ -207,7 +215,11 @@ function _tide_items_draw
                 set -a line (string repeat --count $width ' ')
             else if test $col = $_tide_items_col -a $row = $_tide_items_row
                 # Pad before colouring, so the escapes don't count as width
-                set -a line (set_color -o brcyan)(string pad --right --width $width -- "› $items[$row]")(set_color normal)
+                if set -q _tide_items_grabbed
+                    set -a line (set_color -o -r bryellow)(string pad --right --width $width -- "» $items[$row]")(set_color normal)
+                else
+                    set -a line (set_color -o brcyan)(string pad --right --width $width -- "› $items[$row]")(set_color normal)
+                end
             else
                 set -a line (string pad --right --width $width -- "  $items[$row]")
             end
@@ -216,7 +228,11 @@ function _tide_items_draw
     end
     test $last -lt $rows && echo '  …' || echo
 
-    echo 'j/k up/down  h/l column  J/K reorder  H/L move item'
+    if set -q _tide_items_grabbed
+        echo 'h/j/k/l move the item  Space drop it'
+    else
+        echo 'h/j/k/l move  Space grab the item to move it'
+    end
     echo 'y done  r reset  q cancel'
     if test -n "$_tide_items_message"
         set_color yellow
