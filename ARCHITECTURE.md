@@ -43,6 +43,8 @@ prompt_connection_andor_frame_color --> prompt_spacing
 
 prompt_spacing --> icons
 
-icons --> finish
+icons --> customize_items
+
+customize_items --> finish
 
 ```

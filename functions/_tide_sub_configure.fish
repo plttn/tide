@@ -4,9 +4,18 @@ set -g _tide_color_gold D7AF00
 set -g _tide_color_green 5FD700
 set -g _tide_color_light_blue 00AFFF
 
-# Create an empty fake function for each item
-for func in _fake(functions --all | string match --entire _tide_item)
+# Create a fake function for each item. It draws nothing in the wizard's
+# previews, but the item editor sets _tide_items_preview_all so every item it
+# lists shows up, as its icon (or its name, if it has none). Items with their
+# own fake, sourced below, replace these.
+for func in _fake(functions --all | string match -r '^_tide_item_.+')
     function $func
+        set -q _tide_items_preview_all || return
+        set -l item (string replace _fake_tide_item_ '' (status function))
+        set -l icon fake_tide_"$item"_icon
+        set -l label $$icon
+        test -n "$label" || set label $item
+        _fake_tide_print_item $item $label
     end
 end
 

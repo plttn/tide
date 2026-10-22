@@ -1,9 +1,10 @@
 complete tide --no-files
 
-set -l subcommands bug-report configure reload
+set -l subcommands bug-report configure items reload
 
 complete tide -x -n __fish_use_subcommand -a bug-report -d "Print info for use in bug reports"
 complete tide -x -n __fish_use_subcommand -a configure -d "Run the configuration wizard"
+complete tide -x -n __fish_use_subcommand -a items -d "Choose which prompt items show and where"
 complete tide -x -n __fish_use_subcommand -a reload -d "Reload tide configuration"
 
 complete tide -x -n "not __fish_seen_subcommand_from $subcommands" -s h -l help -d "Print help message"

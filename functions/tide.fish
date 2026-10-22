@@ -23,6 +23,7 @@ function _tide_help
         '' \
         'Subcommands:' \
         '  configure   run interactive configuration wizard' \
+        '  items       choose which prompt items show and where' \
         '  reload      reload tide configuration' \
         '  bug-report  print info for use in bug reports'
 end
