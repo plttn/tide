@@ -20,6 +20,9 @@ eval "function _tide_pwd
     end
 
     string join / -- \$split_output | string length -V | read -g _tide_pwd_len
+    # _tide_fit_jj only needs that untruncated width: skip the per-directory
+    # marker checks below, which touch the disk
+    set -q _tide_pwd_measure_only && return
 
     i=1 for dir_section in \$split_pwd[2..-2]
         string join -- / \$split_pwd[..\$i] | string replace '~' $HOME | read -l parent_dir # Uses i before increment
