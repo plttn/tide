@@ -10,9 +10,7 @@ function _tide_items_editor
     set -l saved_left $fake_tide_left_prompt_items
     set -l saved_right $fake_tide_right_prompt_items
 
-    # Every item there is: one per _tide_item_* function, plus pwd and newline,
-    # which the line prompts handle themselves
-    set -g _tide_items_all pwd newline (functions --all | string replace -rf '^_tide_item_(.+)$' '$1')
+    set -g _tide_items_all (_tide_items_available)
     set -g _tide_items_col 1
     set -g _tide_items_row 1
     set -g _tide_items_top 1
@@ -66,6 +64,12 @@ function _tide_items_editor
     end
     set -e _tide_items_all _tide_items_col _tide_items_row _tide_items_top _tide_items_message _tide_items_preview_all _tide_items_grabbed
     return $result
+end
+
+# Every item there is: one per _tide_item_* function, plus pwd and newline,
+# which the line prompts handle themselves
+function _tide_items_available
+    printf '%s\n' pwd newline (functions --all | string replace -rf '^_tide_item_(.+)$' '$1')
 end
 
 # The items in column $argv[1]: 1 left, 2 hidden (alphabetical), 3 right
@@ -214,7 +218,7 @@ function _tide_items_draw
             if not set -q items[$row]
                 set -a line (string repeat --count $width ' ')
             else if test $col = $_tide_items_col -a $row = $_tide_items_row
-                # Pad before colouring, so the escapes don't count as width
+                # Pad before coloring, so the escapes don't count as width
                 if set -q _tide_items_grabbed
                     set -a line (set_color -o -r bryellow)(string pad --right --width $width -- "» $items[$row]")(set_color normal)
                 else
