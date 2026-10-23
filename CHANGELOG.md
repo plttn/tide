@@ -1,5 +1,28 @@
 # Changelog
 
+## [7.2.0](https://github.com/plttn/tide/compare/v7.1.2...v7.2.0) (2026-10-22)
+
+
+### Features
+
+* **jj:** hide the commit description for new installs ([#111](https://github.com/plttn/tide/issues/111)) ([1637537](https://github.com/plttn/tide/commit/163753761a983e3a2c3be4504d700fd94cd77a49))
+* **jj:** show only the nearest ancestor bookmark for new installs ([#112](https://github.com/plttn/tide/issues/112)) ([3a4ac94](https://github.com/plttn/tide/commit/3a4ac943404ffa73eaf08043d77375b938754e61))
+* **jj:** shrink the jj segment to fit the terminal width ([#115](https://github.com/plttn/tide/issues/115)) ([0d135ac](https://github.com/plttn/tide/commit/0d135acf3e3cfad954c32d600605d64036851fea))
+* **jj:** truncate long bookmark names ([#108](https://github.com/plttn/tide/issues/108)) ([e65f4ab](https://github.com/plttn/tide/commit/e65f4ab8a4a3960436f698015b303de8c2a2351f))
+
+
+### Bug Fixes
+
+* **jj:** don't count an empty, undescribed @ as ahead ([#116](https://github.com/plttn/tide/issues/116)) ([5aecb13](https://github.com/plttn/tide/commit/5aecb13be64e166ab50d31fb15fe24918562dc99))
+* **jj:** ignore length settings that aren't whole numbers ([#114](https://github.com/plttn/tide/issues/114)) ([22a4e3d](https://github.com/plttn/tide/commit/22a4e3d19ce7ae89efbe13bd139aa99dedb55b90))
+* **prompt:** stop forking in the interactive shell on every render ([#105](https://github.com/plttn/tide/issues/105)) ([49ab962](https://github.com/plttn/tide/commit/49ab9623209e7615403e94913739b6330786356e))
+
+
+### Performance Improvements
+
+* **jj:** measure the directory without its marker checks when fitting ([#118](https://github.com/plttn/tide/issues/118)) ([98576a0](https://github.com/plttn/tide/commit/98576a07b08968d6f136a82d58ba62f6f518bf44))
+* **prompt:** reuse the tool lookups while PATH is unchanged ([#117](https://github.com/plttn/tide/issues/117)) ([ca373ee](https://github.com/plttn/tide/commit/ca373eea9e122ec6fe2b54a3e6f9fcf161a11edf))
+
 ## [7.1.2](https://github.com/plttn/tide/compare/v7.1.1...v7.1.2) (2026-07-30)
 
 
