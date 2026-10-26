@@ -40,7 +40,7 @@ if(self.contained_in("::trunk() & ~::@"),
             ),
         ) ++ "\t" ++
         immutable ++ "\t" ++
-        if(description, description.first_line(), "(no desc)") ++ "\n"
+        if(description, description.first_line(), if(!empty, "(no desc)")) ++ "\n"
     ,
         if(self.contained_in("trunk()"),
             ".\n",
