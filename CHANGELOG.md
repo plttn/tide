@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.2.1](https://github.com/plttn/tide/compare/v7.2.0...v7.2.1) (2026-10-27)
+
+
+### Bug Fixes
+
+* **jj:** hide missing descriptions on empty changes without changing counts ([#120](https://github.com/plttn/tide/issues/120)) ([fbc7ba4](https://github.com/plttn/tide/commit/fbc7ba4e2baea6237547c50cc237f0c8381e5736))
+
 ## [7.2.0](https://github.com/plttn/tide/compare/v7.1.2...v7.2.0) (2026-10-22)
 
 
