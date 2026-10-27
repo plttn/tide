@@ -40,7 +40,7 @@ if(self.contained_in("::trunk() & ~::@"),
             ),
         ) ++ "\t" ++
         immutable ++ "\t" ++
-        if(description, description.first_line(), "(no desc)") ++ "\n"
+        if(description, description.first_line(), if(!empty, "(no desc)")) ++ "\n"
     ,
         if(self.contained_in("trunk()"),
             ".\n",
@@ -173,7 +173,7 @@ if(self.contained_in("::trunk() & ~::@"),
             if test "$parts[7]" = true
                 set has_immutable 1
             end
-            if test "$st" = "(empty)"; and test "$parts[8]" = "(no desc)"
+            if test "$st" = "(empty)"; and test -z "$parts[8]"
                 set skipped_wc 1
                 set ahead (math $ahead - 1)
             end
