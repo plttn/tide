@@ -175,19 +175,22 @@ _vcs_item # CHECK: (@ xyz999 def999 * desc feature↑3 ↑3)
 # ↑ or toward ancestor bookmark depths. A described one still counts.
 mkdir -p $dir/jj-emptywc-repo/.jj
 cd $dir/jj-emptywc-repo
-printf '#!/bin/sh\ncmd="$*"\ncase "$cmd" in\n  *"workspace list"*) printf "default\\n" ;;\n  *"log"*) printf "xyz999\\t.\\t.\\tdefault\\tdef999\\t(empty)\\tfalse\\t(no desc)\\n" ;;\n  *) exit 0 ;;\nesac\n' >$dir/bin/jj
-_vcs_item # CHECK: (@ xyz999 def999 (empty) (no desc))
+printf '#!/bin/sh\ncmd="$*"\ncase "$cmd" in\n  *"workspace list"*) printf "default\\n" ;;\n  *"log"*) printf "xyz999\\t.\\t.\\tdefault\\tdef999\\t(empty)\\tfalse\\t\\n" ;;\n  *) exit 0 ;;\nesac\n' >$dir/bin/jj
+_vcs_item # CHECK: (@ xyz999 def999 (empty))
+# A nonempty change without a description still shows the fallback label.
+printf '#!/bin/sh\ncmd="$*"\ncase "$cmd" in\n  *"workspace list"*) printf "default\\n" ;;\n  *"log"*) printf "xyz999\\t.\\t.\\tdefault\\tdef999\\t*\\tfalse\\t(no desc)\\n" ;;\n  *) exit 0 ;;\nesac\n' >$dir/bin/jj
+_vcs_item # CHECK: (@ xyz999 def999 * (no desc) ↑1)
 printf '#!/bin/sh\ncmd="$*"\ncase "$cmd" in\n  *"workspace list"*) printf "default\\n" ;;\n  *"log"*) printf "xyz999\\t.\\t.\\tdefault\\tdef999\\t(empty)\\tfalse\\tplanned\\n" ;;\n  *) exit 0 ;;\nesac\n' >$dir/bin/jj
 _vcs_item # CHECK: (@ xyz999 def999 (empty) planned ↑1)
 # Fast path: the bookmark right below @ gets no depth suffix. Show every
 # ancestor bookmark, since new installs (and CI) only show the nearest one.
-printf '#!/bin/sh\ncmd="$*"\ncase "$cmd" in\n  *"workspace list"*) printf "default\\n" ;;\n  *"::@ ~"*) exit 1 ;;\n  *"log"*) printf "xyz999\\t.\\t.\\tdefault\\tdef999\\t(empty)\\tfalse\\t(no desc)\\nanc123\\tfeature\\n\\nanc456\\tbase\\n" ;;\n  *) exit 0 ;;\nesac\n' >$dir/bin/jj
+printf '#!/bin/sh\ncmd="$*"\ncase "$cmd" in\n  *"workspace list"*) printf "default\\n" ;;\n  *"::@ ~"*) exit 1 ;;\n  *"log"*) printf "xyz999\\t.\\t.\\tdefault\\tdef999\\t(empty)\\tfalse\\t\\nanc123\\tfeature\\n\\nanc456\\tbase\\n" ;;\n  *) exit 0 ;;\nesac\n' >$dir/bin/jj
 set -g tide_jj_ancestor_bookmark_limit 0
-_vcs_item # CHECK: (@ xyz999 def999 (empty) (no desc) feature base↑2 ↑3)
+_vcs_item # CHECK: (@ xyz999 def999 (empty) feature base↑2 ↑3)
 set -e -g tide_jj_ancestor_bookmark_limit
 # Merge fallback: the per-bookmark count includes @, so it drops by one
-printf '#!/bin/sh\ncmd="$*"\ncase "$cmd" in\n  *"workspace list"*) printf "default\\n" ;;\n  *"::@ ~"*) printf ".\\n.\\n.\\n" ;;\n  *"log"*) printf "M\\nxyz999\\t.\\t.\\tdefault\\tdef999\\t(empty)\\tfalse\\t(no desc)\\nanc123\\tfeature\\n\\n" ;;\n  *) exit 0 ;;\nesac\n' >$dir/bin/jj
-_vcs_item # CHECK: (@ xyz999 def999 (empty) (no desc) feature↑2 ↑2)
+printf '#!/bin/sh\ncmd="$*"\ncase "$cmd" in\n  *"workspace list"*) printf "default\\n" ;;\n  *"::@ ~"*) printf ".\\n.\\n.\\n" ;;\n  *"log"*) printf "M\\nxyz999\\t.\\t.\\tdefault\\tdef999\\t(empty)\\tfalse\\t\\nanc123\\tfeature\\n\\n" ;;\n  *) exit 0 ;;\nesac\n' >$dir/bin/jj
+_vcs_item # CHECK: (@ xyz999 def999 (empty) feature↑2 ↑2)
 
 # -------- jj bookmark truncation --------
 # Long bookmark names (both at @ and on ancestors) are capped at
