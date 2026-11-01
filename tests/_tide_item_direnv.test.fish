@@ -11,8 +11,11 @@ set -lx tide_direnv_icon ▼
 _direnv # CHECK:
 
 set -lx DIRENV_DIR
-mock direnv status "echo Found RC allowed true"
+mock direnv status "echo Found RC allowed 0"
 _direnv # CHECK: ▼
 
-mock direnv status "echo Found RC allowed false"
+mock direnv status "echo Found RC allowed 1"
+_direnv # CHECK: ▼
+
+mock direnv status "echo Found RC allowed 2"
 _direnv # CHECK: ▼
