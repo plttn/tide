@@ -13,8 +13,12 @@ set -Ux tide_jobs_number_threshold 1000
 set -gx COLUMNS 80
 set -gx LINES 24
 
-# Happy path: async render via SIGUSR1, then a resize event must repaint
-# with the same content instead of blanking or recomputing.
+# Happy path: async render via SIGUSR1, then a repaint after a resize must
+# draw the same content instead of blanking or recomputing. Fish queues a
+# repaint per resize, so none of them may start a job -- not even one back at
+# the original width, which a drag passes through -- since a job landing
+# mid-drag repaints at a width the terminal has already left. A change other
+# than the width (here a `cd`) must still start one.
 fish -i -c '
     false
     fish_prompt >/dev/null
@@ -23,12 +27,22 @@ fish -i -c '
         sleep 0.01
     end
     _tide_decolor (fish_prompt)
-    _tide_repaint_on_resize
+    set -l pid $_tide_last_pid
+    set -g COLUMNS 60
     true
     _tide_decolor (fish_prompt)
+    fish_prompt >/dev/null
+    set -g COLUMNS 80
+    fish_prompt >/dev/null
+    test "$_tide_last_pid" = "$pid" && echo no-render-on-resize
+    cd /
+    fish_prompt >/dev/null
+    test "$_tide_last_pid" != "$pid" && echo render-after-cd
 ' </dev/null
 # CHECK: {{.*}}✘ 1{{.*}}
 # CHECK: {{.*}}✘ 1{{.*}}
+# CHECK: no-render-on-resize
+# CHECK: render-after-cd
 
 # Signal-unavailable fallback: a fake `kill` that always fails simulates a
 # sandbox that blocks signal delivery. `command kill` bypasses fish
@@ -46,7 +60,7 @@ env PATH="$fake_bin:$PATH" fish -i -c '
     sleep 2 &
     false
     _tide_decolor (fish_prompt)
-    _tide_repaint_on_resize
+    set -g COLUMNS 60
     true
     _tide_decolor (fish_prompt)
     wait
@@ -137,6 +151,37 @@ fish -i -c '
 ' </dev/null
 # CHECK: applied: fresh-content
 
+# A render that matches what's already drawn must not repaint: each extra
+# repaint is another chance to draw over a terminal that's still settling. A
+# render that did change must still repaint, and `tide reload` must forget the
+# old render, so the first one after it repaints. The fake renders publish
+# under a pid no real job has, so a slow first job can't overwrite them.
+fish -i -c '
+    fish_prompt >/dev/null
+    for i in (seq 1 50)
+        set -q _tide_repaint && break
+        sleep 0.01
+    end
+    set -g _tide_last_pid 999999
+    function _tide_signal_job -a content
+        set -e _tide_repaint
+        echo $content >$_tide_prompt_tmpfile.$_tide_last_pid
+        command kill -s USR1 $fish_pid
+        sleep 0.1
+        set -l prompt_var _tide_prompt_$fish_pid
+        echo $content: (set -q _tide_repaint && echo repaint || echo none) $$prompt_var
+    end
+    _tide_signal_job first
+    _tide_signal_job first
+    _tide_signal_job second
+    tide reload
+    _tide_signal_job second
+' </dev/null
+# CHECK: first: repaint first
+# CHECK: first: none first
+# CHECK: second: repaint second
+# CHECK: second: repaint second
+
 # A signal from a superseded job can arrive before the current job has
 # published anything. The handler has to drop it silently: reading the
 # missing file with a builtin would print a warning that `2>/dev/null`
@@ -175,8 +220,8 @@ echo overlap-stderr-lines (count <$stderr_log)
 command rm -f $stderr_log
 
 # A repaint requested in one prompt cycle must not suppress the render of the
-# next one. Both handlers can fire while a command is still running -- an
-# async render landing, or a terminal resize -- and the prompt drawn after
+# next one. Either can happen while a command is still running -- an async
+# render landing, or a terminal resize -- and the prompt drawn after
 # that command has to show the command's own status, not the previous one's.
 # `fish_postexec` doesn't fire for statements inside `fish -c`, so the cycle
 # boundary is emitted by hand.
@@ -188,7 +233,7 @@ for source in render resize
         set -q _tide_repaint && break
         sleep 0.01
     end
-    test $source = resize && _tide_repaint_on_resize
+    test $source = resize && set -g COLUMNS 60
 
     emit fish_postexec
     true; fish_prompt >/dev/null

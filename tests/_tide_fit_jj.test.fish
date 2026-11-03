@@ -42,7 +42,6 @@ function _draw_widths
         end
         for columns in $argv[2..]
             set COLUMNS $columns
-            _tide_repaint_on_resize
             # Split into lines first: _tide_decolor joins its arguments
             set -l drawn (fish_prompt)
             echo $columns: (_tide_decolor $drawn[$argv[1]])
