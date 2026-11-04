@@ -184,8 +184,10 @@ function _tide_items_draw
     set -l width (math --scale=0 $fake_columns / 3)
 
     # Rows left over once the title, preview, headings, scroll markers, help
-    # and key prompt are drawn. Scroll to keep the cursor in view.
-    set -l visible (math $fake_lines - (count $preview) - 10)
+    # and key prompt are drawn, plus the bottom line: read ends with a
+    # newline, which would scroll the screen if the key prompt were on it.
+    # Scroll to keep the cursor in view.
+    set -l visible (math $fake_lines - (count $preview) - 11)
     test $visible -lt 3 && set visible 3
     set -l rows (math max (count $left), (count $hidden), (count $right), 1)
     test $_tide_items_row -lt $_tide_items_top && set _tide_items_top $_tide_items_row

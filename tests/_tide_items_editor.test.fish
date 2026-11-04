@@ -90,6 +90,16 @@ _edit 'l l q'
 _edit 'l l'
 # CHECK: 1: pwd vcs newline character | status node
 
+# With more rows than fit, the editor draws 14 of 16 lines: the key prompt
+# goes on the 15th, and the bottom one stays free so the newline read prints
+# after a key doesn't scroll the screen
+set -g fake_tide_left_prompt_items pwd vcs newline character
+set -g fake_tide_right_prompt_items status node
+set -g fake_lines 16
+printf q | _tide_items_editor | count
+# CHECK: 14
+set -g fake_lines 30
+
 # The editor leaves no state behind, and the preview stubs draw nothing again
 set --names | string match -r '^_tide_items_' | count
 # CHECK: 0
