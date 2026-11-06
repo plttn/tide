@@ -9,6 +9,7 @@ source (functions --details _tide_pwd)
 
 set -l prompt_var _tide_prompt_$fish_pid
 set -g $prompt_var
+set -e _tide_stored_render _tide_dispatch_key _tide_dispatch_columns _tide_resized
 # global so `tide reload` reuses it instead of leaking one per reload; a
 # private 0700 dir (rather than a bare mktemp file) keeps the per-render
 # scratch files -- created via `>` redirection at umask perms -- from ever
@@ -17,9 +18,8 @@ set -q _tide_prompt_tmpdir || set -g _tide_prompt_tmpdir (mktemp -d)
 set -g _tide_prompt_tmpfile $_tide_prompt_tmpdir/prompt
 
 # Bumped once per prompt cycle and stamped into $_tide_repaint every time a
-# repaint is requested. Without it, a repaint requested while a command is
-# still running -- a render landing, or a terminal resize, during a long
-# command -- would be mistaken for a repaint of the prompt drawn next, whose
+# render lands. Without it, a repaint requested while a command is still
+# running -- a render landing during a long command -- would be mistaken for a repaint of the prompt drawn next, whose
 # render would then be skipped, leaving pre-command content on screen until
 # something else redrew it.
 set -q _tide_cycle || set -g _tide_cycle 0
@@ -52,6 +52,8 @@ end
 # the versions of the jj segment its placeholder can be filled with (see
 # _tide_1_line_prompt), so it's moved into $_tide_jj_variants instead.
 function _tide_store_render --inherit-variable prompt_var
+    # Kept whole, so the SIGUSR1 handler can tell whether a render changed
+    set -g _tide_stored_render (string join \n -- $argv | string collect)
     set -g _tide_jj_variants
     if string match -q \x1f'*' -- "$argv[-1]"
         set _tide_jj_variants (string split -n \x1f -- $argv[-1])
@@ -82,15 +84,15 @@ function _tide_refresh_prompt --on-signal SIGUSR1 --inherit-variable prompt_var
     # Marks this job as finished even if a tmp cleaner later deletes its file,
     # so it's never mistaken for one still running (see _tide_dispatch_render).
     set -g _tide_done_pid $_tide_last_pid
-    _tide_store_render $rendered
-    set -g _tide_repaint $_tide_cycle
-    commandline -f repaint
-end
 
-# On resize, repaint with the last completed render but leave $prompt_var
-# alone -- in synchronous-fallback mode the tmpfile is never written, so
-# reading it here would blank the prompt.
-function _tide_repaint_on_resize --on-variable COLUMNS
+    # A render that matches what's already drawn needs no repaint. Repaints
+    # from vi mode switches or other plugins start jobs that usually come
+    # back unchanged, and every extra repaint is another chance to draw over
+    # a terminal that's still settling.
+    set -l joined (string join \n -- $rendered | string collect)
+    test "$joined" = "$_tide_stored_render" && return
+
+    _tide_store_render $rendered
     set -g _tide_repaint $_tide_cycle
     commandline -f repaint
 end
@@ -106,11 +108,42 @@ function _tide_signal_test --on-signal SIGUSR2
 end
 command kill -s USR2 $fish_pid 2>/dev/null || set -g _tide_signal_unavailable true
 
+# The right prompt and the jj segment's fit depend on the width, so a resize
+# needs a repaint. Fish already repaints on every resize when
+# $fish_handle_reflow is 1, and a second repaint here would just be one more
+# draw racing the terminal. Fish turns it off for terminals that rewrap text
+# themselves (WezTerm, Alacritty, Konsole, VTE), so repaint only then. The
+# repaint reuses the last render (see _tide_dispatch_render).
+function _tide_repaint_on_resize --on-variable COLUMNS
+    test "$fish_handle_reflow" = 1 && return
+    commandline -f repaint
+end
+
 # Renders in the background (or synchronously, if signals are confirmed
 # unavailable) and repaints when ready. $argv[1] is the render function to
 # call for this session (_tide_1_line_prompt or _tide_2_line_prompt).
 function _tide_dispatch_render --inherit-variable prompt_var --inherit-variable fish_path
     jobs -q && jobs -p | count | read -lx _tide_jobs
+
+    # Every resize repaints the prompt (see _tide_repaint_on_resize). A
+    # repaint where only the
+    # width changed since the last render needs no new one: everything that
+    # depends on width is worked out when the prompt is drawn. Starting a job
+    # here would repaint again when it lands, in the middle of a window drag.
+    # Fish doesn't merge the repaints it queues, and a drag can pass back
+    # through the old width, so once the width has changed this keeps reusing
+    # the last render until something in the key changes. The cost: other
+    # repaints after a resize reuse it too.
+    set -l key "$_tide_cycle $_tide_jobs $fish_bind_mode $PWD"
+    if test "$key" = "$_tide_dispatch_key"
+        if set -q _tide_resized || test "$COLUMNS" != "$_tide_dispatch_columns"
+            set -g _tide_resized
+            return
+        end
+    end
+    set -g _tide_dispatch_key $key
+    set -g _tide_dispatch_columns $COLUMNS
+    set -e _tide_resized
 
     if test "$_tide_signal_unavailable" = true
         _tide_store_render ($argv[1])
