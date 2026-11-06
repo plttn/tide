@@ -1,5 +1,13 @@
 # Changelog
 
+## [7.2.2](https://github.com/plttn/tide/compare/v7.2.1...v7.2.2) (2026-11-06)
+
+
+### Bug Fixes
+
+* **direnv:** handle numeric blocked/denied states in prompt styling ([#123](https://github.com/plttn/tide/issues/123)) ([620ef09](https://github.com/plttn/tide/commit/620ef09efe94db87100655481f4284e375db589f))
+* **prompt:** cut redundant renders and repaints on window resize ([#125](https://github.com/plttn/tide/issues/125)) ([6ec1ff6](https://github.com/plttn/tide/commit/6ec1ff611ab7787c80781b03d715f855961003b5))
+
 ## [7.2.1](https://github.com/plttn/tide/compare/v7.2.0...v7.2.1) (2026-10-27)
 
 
