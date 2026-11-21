@@ -11,9 +11,13 @@ fish -i -c '
     fish_prompt >/dev/null
     echo left: (string join " " -- $tide_left_prompt_items)
     echo right: (string join " " -- $tide_right_prompt_items)
+    echo cached left: (string join " " -- $_tide_left_items)
+    echo cached right: (string join " " -- $_tide_right_items)
 ' </dev/null 2>/dev/null
 # CHECK: left: pwd vcs status
 # CHECK: right: time vcs
+# CHECK: cached left: pwd vcs status
+# CHECK: cached right: time vcs
 
 # The next shell must leave the migrated items unchanged.
 fish -i -c '
